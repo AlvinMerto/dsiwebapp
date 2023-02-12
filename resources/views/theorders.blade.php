@@ -26,12 +26,21 @@
                             <button class='dsibutton'> GENERATE&nbsp;P.O. </button>
                         </div>
                         <div class='flex'>
-                            <button class='dsibutton' data-toggle='modal' data-target='#selectdate'> Select date </button> &nbsp;
+                            <?php if (!isset($weeklyorder)) { ?>
+                                <button class='dsibutton' data-toggle='modal' data-target='#selectdate'> Select date </button> &nbsp;
+                            <?php } ?>
                             <form method='post'>
                                 @csrf
                                 <input type='hidden' value='<?php echo $orderdate; ?>' id='theorderdate' name='orderdate'/>
                                 <input type='hidden' value='<?php echo json_encode($qtidfks); ?>' name='qtidfks'/>
-                                <input type='submit' class='dsibutton' value='Generate Order ID' name='genweeklyid'/>
+                                <?php if (isset($weeklyorder)) { ?>
+                                    <div style="padding-left: 12px;border-left: 1px solid #ccc;margin-left: 12px;">
+                                        <p class='mg-b-0'> <strong> Weekly order number:</strong> </p>
+                                        <?php echo "<p class='mg-b-0' style='color: #a3a3a3;'>".$weeklyorder."</p>"; ?>
+                                    </div>
+                                <?php } else {?>
+                                    <input type='submit' class='dsibutton' value='Generate Order ID' name='genweeklyid'/>
+                                <?php } ?>
                             </form>
                         </div>
                     </div>
@@ -54,12 +63,18 @@
                                 <th> Total Cost </th>
                             </tr>
                         </thead>
-                        <?php 
-                             if (count($data)>0) { 
+                        <?php
+                        if (count($data)>0) { 
                         echo "<tbody>";
                                 
                                         $count = 1;
                                         foreach($data as $d) {
+                                            $theorderid = null;
+
+                                            if (isset($d->theorderid)) {
+                                                $theorderid = $d->theorderid;
+                                            }
+
                                             echo "<tr>";
                                                 echo "<td>{$count}</td>";
                                                 echo "<td>{$d->suppname}</td>";
@@ -69,50 +84,97 @@
                                                 echo "<td>".number_format($d->totalprice,2)."</td>";
                                                // echo "<td>".number_format($d->price,2)."</td>";
                                                 echo "<td>".number_format($d->extendedprice,2)."</td>";
+                                                // echo "<td>".var_dump($d->estimatedsh)."</td>";
 
-                                                if (isset($d->estimatedsh)) {
-                                                    echo "<td><input type='text' class='orderdsitxtbox' placeholder='0.00' value='{$d->estimatedsh}'/></td>";
-                                                } else {
-                                                    echo "<td>0.00</td>";
+                                                if ($funcfrom == "processed") {
+                                                    $esttxtbox = null;
+                                                    if ($d->estimatedsh == null) {
+                                                        // echo "<td><input type='text' class='orderdsitxtbox' placeholder='0.00'/></td>";
+                                                        $esttxtbox = "placeholder='0.00'";
+                                                    } else {
+                                                        $esttxtbox = "value='".number_format($d->estimatedsh,2)."'";
+                                                    }
+                                                    echo "<td>
+                                                            <input  type='text' 
+                                                                    class='orderdsitxtbox' 
+                                                                    data-fld='estimatedsh' 
+                                                                    data-idfld='theorderid'
+                                                                    data-id='".$theorderid."'
+                                                                    data-vendor='".$fromvendor."'
+                                                                    data-affectid='total".$theorderid."'
+                                                                    data-tbl='the_orders' {$esttxtbox}/>
+                                                          </td>";
+                                                    
+                                                } else if ($funcfrom == "ordertable") {
+                                                    echo "<td> 0.00 </td>";
                                                 }
 
                                                 if (isset($d->totalcost)) {
                                                     $total = $d->totalcost;
                                                 } else {
-                                                    $total  = $d->extendedprice+0;
+                                                    $toadd = 0;
+                                                    if ($funcfrom == "processed") {
+                                                        $toadd = $d->estimatedsh;
+                                                    }
+                                                    $total  = $d->extendedprice+$toadd;
                                                 }
 
-                                                echo "<td>".number_format($total,2)."</td>";
+                                                echo "<td id='total{$theorderid}'>".number_format($total,2)."</td>";
                                             echo "</tr>";
                                             $count++;
                                         }
-                                       
-                        echo "       
-                                <tr>
-                                    <th> </th>
-                                    <th> </th>
-                                    <th> </th>
-                                    <th> </th>
-                                    <th> <strong> </strong> </th>
-                                    <th> <strong> </strong> </th>
-                                    <!-- <th> </th> -->
-                                    <th> <strong>".number_format($totals['totalextendprice'],2)."</strong> </th>
-                                    <th> <strong>".number_format($totals['totalestimatedsh'],2)."</strong> </th>
-                                    <th> <strong>".number_format($totals['totaltotalcost'],2)."</strong> </th>
-                                </tr>
-                                <tr>
-                                    <th> </th>
-                                    <th> </th>
-                                    <th> </th>
-                                    <th> </th>
-                                    <th> </th>
-                                    <th> </th>
-                                    <!-- <th> </th> -->
-                                    <th> <input type='text' class='orderdsitxtbox' placeholder='tax'/> </th>
-                                    <th> <input type='text' class='orderdsitxtbox' placeholder='tax'/> </th>
-                                    <th> <input type='text' class='orderdsitxtbox' placeholder='tax'/> </th>
-                                </tr>
-                                </tbody>";
+                            if ($funcfrom == "processed") {  
+                                $grpidorder = explode("/",$orderdate)[1];
+
+                                echo "  <tr>
+                                            <th colspan='6' style='text-align:right;' class='totaltxt dsitxt'> Total </th>
+                                            <th class='totaltxt'> <strong>".number_format($totals['totalextendprice'],2)."</strong> </th>
+                                            <th class='totaltxt' id='totalestimatedsh'> <strong>".number_format($totals['totalestimatedsh'],2)."</strong> </th>
+                                            <th class='totaltxt' id='grandtotalcost'> <strong>".number_format($totals['totaltotalcost'],2)."</strong> </th>
+                                        </tr>
+                                        <tr>
+                                        <th colspan='6' style='text-align:right;' class='totaltxt dsitxt'> Tax(%) </th>
+                                            <th> <input type='text' class='grandtaxtxt' 
+                                                        data-fld='tax' 
+                                                        data-idfld='bulkorderid'
+                                                        data-id='".$grpidorder."'
+                                                        data-vendor='".$fromvendor."'
+                                                        data-affectid='grandextendedcost'
+                                                        data-tbl='the_orders'
+                                                        value='{$data[0]->tax}'/> </th>
+                                            <th> <input type='text' class='grandtaxtxt'
+                                                        data-fld='estimatedshtax' 
+                                                        data-idfld='bulkorderid'
+                                                        data-id='".$grpidorder."'
+                                                        data-vendor='".$fromvendor."'
+                                                        data-affectid='grandestsh'
+                                                        data-tbl='the_orders'
+                                                        value='{$data[0]->estimatedshtax}'/> </th>
+                                            <th> <input type='text' class='grandtaxtxt' 
+                                                        data-fld='totalcosttax' 
+                                                        data-idfld='bulkorderid'
+                                                        data-id='".$grpidorder."'
+                                                        data-vendor='".$fromvendor."'
+                                                        data-affectid='gggrandtotalcost'
+                                                        data-tbl='the_orders'
+                                                        value='{$data[0]->totalcosttax}'/> </th>
+                                        </tr>
+                                        <tr>
+                                     
+                                        <th colspan='6' style='text-align:right;' class='totaltxt dsitxt'> Grand Total </th>
+                                        <th class='totaltxt' id='grandextendedcost'>".number_format($totals['extcostwithtax'],2)."</th>
+                                        <th class='totaltxt' id='grandestsh'>".number_format($totals['estshwithtax'],2)."</th>
+                                        <th class='totaltxt' id='gggrandtotalcost'>".number_format($totals['totcostwithtax'],2)."</th>
+                                    </tr>
+                                        </tbody>";
+                            } else if ($funcfrom == "ordertable") {
+                                echo "<tr>
+                                        <th colspan='6' style='text-align:right;' class='totaltxt dsitxt'> Total </th>
+                                        <th class='totaltxt'> <strong>".number_format($totals['totalextendprice'],2)."</strong> </th>
+                                        <th class='totaltxt' id='totalestimatedsh'> <strong>".number_format($totals['totalestimatedsh'],2)."</strong> </th>
+                                        <th class='totaltxt' id='grandtotalcost'> <strong>".number_format($totals['totaltotalcost'],2)."</strong> </th>
+                                      </tr>";
+                            }
                         } else {
                             echo "<tbody>";
                                 echo "<tr>";

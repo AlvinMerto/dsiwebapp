@@ -50,9 +50,9 @@ class TheOrdersController extends Controller
                 $getdata = "select tbl1.*, tbl1.totalqty*totalprice as extendedprice 
                                     from (select *, sum(qty) as totalqty, sum(itemcost) as totalprice 
                                         from quoteitemstbls where quoteidfk in ({$wherein_inner}) GROUP by itemdesc, itemcost, suppname) as tbl1";
-                $dataforsave = DB::select(DB::raw($getdata));
+                $dataforsave    = DB::select(DB::raw($getdata));
 
-                $bulkorderid    = md5(md5(md5("mdyhis")));
+                $bulkorderid    = md5(md5(md5( date("mdyhis") )));
                 $processeddate  = date("Y-m-d");
 
                 if (count($dataforsave) > 0) {
@@ -70,9 +70,9 @@ class TheOrdersController extends Controller
                             "qty" 	            => $dfs->totalqty,
                             "unitcost" 	        => $dfs->totalprice,
                             "extendedcost" 	    => $dfs->extendedprice,
-                            "estimatedsh" 	    => "0",
-                            "estimatedshtax" 	=> "0",
-                            "tax" 	            => "0",
+                            "estimatedsh" 	    => null,
+                            "estimatedshtax" 	=> null,
+                            "tax" 	            => null,
                             "totalcost" 	    => $total,
                             "inputby" 	        => Auth::id(),
                             "status"            => "1"
@@ -125,6 +125,7 @@ class TheOrdersController extends Controller
                     $totals['totalestimatedsh']   = 0;
                     $totals['totaltotalcost']     = $totals['totaltotalcost']+$total;
 
+                    //$totals['grand']
                     if (count($qtidfks) == 0 || !in_array($d->quoteidfk, $qtidfks)) {
                         array_push($qtidfks,$d->quoteidfk);
                     }
@@ -133,8 +134,9 @@ class TheOrdersController extends Controller
 
             // var_dump($qtidfks);
             $orderdate = "orders/".$orderdate;
-            $title   = "Orders";
-            return view("theorders", compact("data","headers","orderdate","fromvendor","totals","qtidfks","title"));
+            $title     = "Orders";
+            $funcfrom  = "ordertable";
+            return view("theorders", compact("data","headers","orderdate","fromvendor","totals","qtidfks","title","funcfrom"));
         } else {
             $orderswaiting   = DB::table("quotation_corners")
                                     ->select("quotation_corners.*","customerstbls.companyname")
@@ -156,14 +158,15 @@ class TheOrdersController extends Controller
         }
         $data = DB::select(DB::raw(
             "select 
+                theorderid,
                 vendor as suppname, 
                 description as itemdesc,
                 qty as totalqty,
                 unitcost as totalprice,
                 extendedcost as extendedprice,
-                totalcost, 
                 estimatedsh,
                 estimatedshtax,
+                totalcosttax,
                 tax from the_orders where bulkorderid = '{$weeklyorder}' {$where}
             "
         ));
@@ -175,11 +178,125 @@ class TheOrdersController extends Controller
             "totalprice"        => 0,
             "totalextendprice"  => 0,
             "totalestimatedsh"  => 0,
-            "totaltotalcost"    => 0
+            "totaltotalcost"    => 0,
+            "extcostwithtax"    => 0,
+            "estshwithtax"      => 0,
+            "totcostwithtax"    => 0
         ];
 
-        $headers = TheOrders::where("bulkorderid",$weeklyorder)->get("vendor as suppname");
-        $title   = "Processed Orders";
-        return view("theorders", compact("data","headers","orderdate","fromvendor","totals","qtidfks","title"));
+        if (count($data) > 0) {
+            foreach($data as $d) {
+                $total  = $d->extendedprice+$d->estimatedsh;
+
+                $totals['totalqty']           = $totals['totalqty']+$d->totalqty;
+                $totals['totalprice']         = $totals['totalprice']+$d->totalprice;
+                $totals['totalextendprice']   = $totals['totalextendprice']+$d->extendedprice;
+                $totals['totalestimatedsh']   = $totals['totalestimatedsh']+$d->estimatedsh;
+                $totals['totaltotalcost']     = $totals['totaltotalcost']+$total;
+
+                // if (count($qtidfks) == 0 || !in_array($d->quoteidfk, $qtidfks)) {
+                //     array_push($qtidfks,$d->quoteidfk);
+                // }
+            }
+
+            $extendtax  = $data[0]->tax/100;
+            $estshtax   = $data[0]->estimatedshtax/100;
+            $totcosttax = $data[0]->totalcosttax/100;
+            
+            $extval     = $totals['totalextendprice']*$extendtax;
+            $estshval   = $totals['totalestimatedsh']*$estshtax;
+            $totcostval = $totals['totaltotalcost']*$totcosttax;
+
+            $totals['extcostwithtax']  = $totals['totalextendprice']+$extval;
+            $totals['estshwithtax']    = $totals['totalestimatedsh']+$estshval;
+            $totals['totcostwithtax']  = $totals['totaltotalcost']+$totcostval;
+        }
+
+        $headers   = TheOrders::where("bulkorderid",$weeklyorder)->get("vendor as suppname");
+        $title     = "Processed Orders";
+        $funcfrom  = "processed";
+        return view("theorders", compact("data","headers","orderdate","fromvendor","totals","qtidfks","title","funcfrom","weeklyorder"));
     }
+
+    function totalestsh(Request $req) {
+        $grpid      = $req->input("grpid");
+        $fromvendor = $req->input("fromvendor");
+
+        $getthetotalfrom = $req->input("gettotalfrom");
+
+        $where      = null;
+        if (strlen($fromvendor) > 0) {
+            $where = " and vendor = '{$fromvendor}'";
+        }
+
+        if ($getthetotalfrom == "totestimatedsh") {
+            $data = DB::select(DB::raw(
+                "select sum(estimatedsh) as totalestimatedsh from the_orders where bulkorderid = '{$grpid}' {$where}"
+            ));
+
+            $value = 0;
+            if (count($data) > 0) {
+                $value = $data[0]->totalestimatedsh;
+            }
+        } else if ($getthetotalfrom == "totalcost") {
+            $data = DB::select(DB::raw(
+                "select sum(totalcost) as grandtotalcost from the_orders where bulkorderid = '{$grpid}' {$where}"
+            ));
+
+            $value = 0;
+            if (count($data) > 0) {
+                $value = $data[0]->grandtotalcost;
+            }
+        } else if ($getthetotalfrom == "grandextendedcost") {
+            $data = DB::select(DB::raw(
+                "select sum(extendedcost) as grandextendedcost, tax from the_orders where bulkorderid = '{$grpid}' {$where}"
+            ));
+
+            $value = 0;
+            if (count($data) > 0) {
+                $tax   = $data[0]->tax/100;
+                $tt    = $data[0]->grandextendedcost*$tax;
+                $value = $data[0]->grandextendedcost+$tt;
+            }
+
+        } else if ($getthetotalfrom == "grandestsh") {
+            $data = DB::select(DB::raw(
+                "select sum(estimatedsh) as grandestsh, estimatedshtax from the_orders where bulkorderid = '{$grpid}' {$where}"
+            ));
+
+            $value = 0;
+            if (count($data) > 0) {
+                $tax   = $data[0]->estimatedshtax/100;
+                $tt    = $data[0]->grandestsh*$tax;
+                $value = $data[0]->grandestsh+$tt;
+            }
+        } else if ($getthetotalfrom == "gggrandtotalcost") {
+            $data = DB::select(DB::raw(
+                "select sum(totalcost) as grandtotalcost, totalcosttax from the_orders where bulkorderid = '{$grpid}' {$where}"
+            ));
+
+            $value = 0;
+            if (count($data) > 0) {
+                $tax   = $data[0]->totalcosttax/100;
+                $tt    = $data[0]->grandtotalcost*$tax;
+                $value = $data[0]->grandtotalcost+$tt;
+            }
+        }
+
+        return response()->json( number_format($value,2) );
+    }
+
+    function gettotalcost(Request $req) {
+        $orderid   = $req->input("orderid");
+        // $vendor    = $req->input("vendor");
+
+        $thevalues = TheOrders::where(["theorderid"=>$orderid])->get(["estimatedsh","extendedcost"]); // 
+
+        $totalcost = $thevalues[0]->extendedcost+$thevalues[0]->estimatedsh;
+
+        $update    = TheOrders::where("theorderid",$orderid)->update(["totalcost"=>$totalcost]);
+        
+        return response()->json( number_format($totalcost,2));
+    }
+
 }

@@ -313,7 +313,6 @@ class QuotationsController extends Controller
 
         if ($fld == "itemcost") { 
             $itemcost = $val;
-
         }
 
         if ($fld == "qty") { $qty = $val; }
@@ -332,7 +331,7 @@ class QuotationsController extends Controller
         if ($markup > 0) {
         // change price
             $per      = (100/$markup);
-            $addon    = ceil($itemcost/$per);
+            $addon    = $itemcost/$per;
             $price    = $itemcost+$addon;
 
             // if private 
@@ -344,15 +343,16 @@ class QuotationsController extends Controller
 
         // change extended price
             $extended = $price*$qty;
-            
+
         // change profit
-            $profit   = $extended-$totalitemcost;
+            $profit   = ceil($extended)-$totalitemcost;
+            
         } else {           
             // $price    = $itemcost;
             $extended = $price*$qty;
             // $profit   = "0";
             if ((int) $custint == 2) { // private
-                $profit = ($extended-$totalitemcost);
+                $profit = (ceil($extended)-$totalitemcost);
             } else {
                 $profit = 0;
             }
@@ -360,20 +360,20 @@ class QuotationsController extends Controller
 
         $data = [
             "markupvalue"   => $markup,
-            "itemcost"      => ceil($itemcost),
+            "itemcost"      => $itemcost,
             "qty"           => $qty,
             "price"         => ceil($price),
             "extended"      => ceil($extended),
-            "profit"        => ceil($profit)
+            "profit"        => $profit
         ];
 
         $returndata = [
             "markupvalue"   => $markup,
-            "itemcost"      => number_format(ceil($itemcost),2),
+            "itemcost"      => number_format($itemcost,2),
             "qty"           => $qty,
             "price"         => number_format(ceil($price),2),
             "extended"      => number_format(ceil($extended),2),
-            "profit"        => number_format(ceil($profit),2)
+            "profit"        => number_format($profit,2)
         ];
 
         $update = Quoteitemstbl::where("quoteitemid",$id)->update($data);

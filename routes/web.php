@@ -93,6 +93,9 @@ Route::middleware("auth")->group(function(){
     Route::get("/orders/{orderdate?}/{fromvendor?}/{weeklyorder?}",[TheOrdersController::class,"ordertable"])->name('orders');
     Route::post("/orders/{orderdate?}/{fromvendor?}/{weeklyorder?}",[TheOrdersController::class,"ordertable"])->name('orders');
     Route::get("/processed/{weekorderid?}/{fromvendor?}",[TheOrdersController::class,"showprocessedorder"])->name('processed');
+    Route::post("/totalestsh",[TheOrdersController::class,"totalestsh"])->name('totalestsh');
+    Route::post("/gettotalcost",[TheOrdersController::class,"gettotalcost"])->name('gettotalcost');
+    
 });
 // end 
 

@@ -57,7 +57,7 @@
                                     foreach($processedorders as $pd) {
                                         echo "<tr>";
                                             echo "<td>{$count}</td>";
-                                            echo "<td class='compname'><a href='".url('')."/processed/{$pd->bulkorderid}' target='_blank'>{$pd->bulkorderid}</a></td>";
+                                            echo "<td class='compname'><a href='".url('')."/processed/{$pd->bulkorderid}'>{$pd->bulkorderid}</a></td>";
                                             echo "<td>".date("M. d, Y", strtotime($pd->processeddate))."</td>";
                                             echo "<td>".number_format($pd->totalcost,2)."</td>";
                                         echo "</tr>";

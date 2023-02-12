@@ -29,6 +29,7 @@ return new class extends Migration
             $table->string("estimatedshtax")->nullable();
             $table->string("tax")->nullable();
             $table->string("totalcost")->nullable();
+            $table->string("totalcosttax")->nullable();
             $table->string("inputby")->nullable();
             $table->string("status")->nullable();
             $table->timestamps();

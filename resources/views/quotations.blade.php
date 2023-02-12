@@ -265,7 +265,7 @@
                 <div class=' pd-l-0'>
                     <!--<h6 class="pageh pd-l-10 pd-t-10 pd-b-10" style="border-right: 1px solid #eaeaea;border-bottom: 1px solid #eaeaea;"> Quotation for <a href='#' data-toggle='modal' data-target='#basicinfodiv' class='thecompname'> <?php // echo $data[0]->companyname; ?> </a>  </h6>--> 
                         <div class='dsibox minheightdiv bgdiv' id='contextmenu'>
-                            <table class='quotestable'>
+                            <table class='quotestable table-striped'>
                                 <thead>
                                     <tr style="border-right: 1px solid #eaeaea;">
                                         <th> &nbsp; </th>

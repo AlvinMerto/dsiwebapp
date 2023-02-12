@@ -23,7 +23,7 @@
                                         foreach($allquotes as $aq) {
                                             echo "<tr>";
                                                 echo   "<th> 1 </th>";
-                                                echo   "<td class='compname'> <a href='".route('quotes')."/{$aq->id}/{$aq->quoteid}' target='_blank'>QT-{$aq->quoteid}</a></td>";
+                                                echo   "<td class='compname'> <a href='".route('quotes')."/{$aq->id}/{$aq->quoteid}'>QT-{$aq->quoteid}</a></td>";
                                                 echo   "<td> {$aq->companyname} </td>";
                                                 echo   "<td> ". number_format($aq->total,2)."</td>";
                                                 echo   "<td> ". date("M. d, Y", strtotime($aq->quotedate)) ."</td>";

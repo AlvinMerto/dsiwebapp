@@ -15,7 +15,7 @@ class TheOrders extends Model
         "quoteid","custidfk","contidfk","processeddate",
         "bulkorderid","vendor","description","quoteid",
         "qty","unitcost","extendedcost","estimatedsh","estimatedshtax","tax",
-        "totalcost","inputby","status","created_at","updated_at"
+        "totalcost","totalcosttax","inputby","status","created_at","updated_at"
     ];
     
 }

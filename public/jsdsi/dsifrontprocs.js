@@ -1,6 +1,14 @@
 // const { get } = require("lodash");
 
 class Dsifronprocs {
+    numberWithCommas(x) {
+        return x.toString().replace(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, ",");
+    }
+
+    removecommas(x) {
+        return x.replace(/,/g, '');
+    }
+
     showdwindow(thewindow, id = false) {
         $(document).find("#showwindowhere").html("...loading data");
         $.ajax({
@@ -514,4 +522,43 @@ class Dsifronprocs {
             }
         }) 
     }
+
+    gettotalestsh(grpid, fromvendor, gettotalfrom ,somefunction = false) {
+        $.ajax({
+            url      : url+"/totalestsh",
+            type     : "post",
+            data     : { grpid : grpid , fromvendor  : fromvendor , gettotalfrom : gettotalfrom },
+            dataType : "json",
+            success  : function(data) {
+                if (somefunction != false) {
+                    somefunction(data);
+                }
+            }, error : function() {
+                alert("error computing total estimated SH");
+            }
+        });
+    }
+
+    gettotalcost(orderid, vendor, somefunction = false) {
+
+        $.ajax({
+            url      : url+"/gettotalcost",
+            type     : "post",
+            data     : { orderid : orderid , vendor : vendor},
+            dataType : "json",
+            success  : function(data) {
+                if (somefunction != false) {
+                    somefunction(data);
+                }
+            }, error : function() {
+                alert("Error total cost")
+            }
+        })
+    }
+
+    // callgrandtotal(id, affectid) {
+    //     gettotalestsh(id, vendor, affectid, function(data){
+    //         $(document).find("#"+affectid).html(data);
+    //     });
+    // }
 }

@@ -140,16 +140,19 @@ class Processhandler extends Controller
             $fld       = isset($otherinfo['otherfld'])?$otherinfo['otherfld']:$fld;
             $id        = isset($otherinfo['othid'])?$otherinfo['othid']:$id;
         }
-        // save to contact history 
-            $details  = [  
-            "contidfk"  => $id,
-            "thefield"  => $fld,
-            "thevalue"  => $val,
-            "inputby"   => Auth::id(),
-            "status"    => 1
-            ];
 
-            $conthist = contacthistorytbl::create($details);
+        // save to contact history 
+        if ($tbl == "contactstbls" || $tbl == "contactfluidtbls") {
+                $details  = [  
+                "contidfk"  => $id,
+                "thefield"  => $fld,
+                "thevalue"  => $val,
+                "inputby"   => Auth::id(),
+                "status"    => 1
+                ];
+
+                $conthist = contacthistorytbl::create($details);
+        }
         // end 
         return response()->json($update);
     }
@@ -340,7 +343,7 @@ class Processhandler extends Controller
         $thecode  = md5(md5(md5(date("mdyhis"))));
 
         $link     = $link."/".$thecode;
-        
+
         $emaillink = [
             "thecode"        => $thecode,
             "linktoapprove"  => $link,
