@@ -12,7 +12,7 @@ class Subtotaltbl extends Model
     protected $table        = "subtotaltbls";
     protected $primaryKey   = "subtotalid";
     protected $fillable     = [
-        "subtotalname","subtotalvalue",
+        "subtotalname","subtotalqty","inputby",
         "status","created_at","updated_at"
     ];
 }

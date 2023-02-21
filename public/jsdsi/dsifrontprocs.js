@@ -1,4 +1,5 @@
 // const { get } = require("lodash");
+let needsapproval = false;
 
 class Dsifronprocs {
     numberWithCommas(x) {
@@ -18,6 +19,21 @@ class Dsifronprocs {
             dataType : "html",
             success : function(data) {
                 $(document).find("#showwindowhere").html(data);
+            }, error : function() {
+                alert("error");
+            }
+        });
+    }
+
+    showdwindow_to_here(thewindow, id = false, displayhere) {
+        $(document).find("#"+displayhere).html("...loading data");
+        $.ajax({
+            url  : url+"/"+thewindow,
+            type : "GET",
+            data : { id : id },
+            dataType : "html",
+            success : function(data) {
+                $(document).find("#"+displayhere).html(data);
             }, error : function() {
                 alert("error");
             }
@@ -256,7 +272,7 @@ class Dsifronprocs {
         $.ajax({
             url      : url+"/displayperitem",
             type     : "get",
-            data     : { uniqueid : uniqueid },
+            data     : { info : info, uniqueid : uniqueid },
             dataType : "html",
             success  : function(data){
                 // console.log(data);
@@ -280,7 +296,7 @@ class Dsifronprocs {
                 $(document).find("#totaldiv").html(data);
 
                 let a = new Dsifronprocs();
-                    a.checkformarkupstatus(quoteidfk);
+                    a.checkitemneedsapproval(quoteidfk);
 
             }, error : function(){
                 // alert("error computing");
@@ -291,18 +307,27 @@ class Dsifronprocs {
     // end 
 
     // check for markup status 
-    checkformarkupstatus(quoteidfk) {
+    checkformarkupstatus(quoteitemid, somefunction = false) {
         $.ajax({
             url        : url+"/checkformarkups",
             type       : "post",
-            data       : { quoteidfk : quoteidfk },
+            data       : { quoteitemid : quoteitemid },
             dataType   : "html",
             success    : function(data) {
-                
                 if (data != "0" || data != 0) {
-                    $(document).find("#checkformarkups").html(data);
+                    needsapproval = true;
                 } else {
-                    $(document).find("#checkformarkups").html("");
+                    needsapproval = false;
+                }
+
+                if (somefunction == false) {
+                    if (data != "0" || data != 0) {
+                        $(document).find("#checkformarkups").html(data);
+                    } else {
+                        $(document).find("#checkformarkups").html("");
+                    }
+                } else {
+                    somefunction(data);
                 }
             }, error : function(){
                 // alert("error computing");
@@ -366,6 +391,7 @@ class Dsifronprocs {
                 let a = new Dsifronprocs();
                 a.displaythequoteitems(quoteid);
                 a.computatethetotal(quoteid);
+                a.checkitemneedsapproval(quoteid);
             }, error : function() { 
                 alert("error deleting");
             }
@@ -408,7 +434,8 @@ class Dsifronprocs {
         }); 
     }
 
-    sendemail(subject, message, link , id = false , idfld = false, tbl = false , somefunction = false) {
+    sendemail(subject, message, link , id = false , idfld = false, tbl = false , somefunction = false, emailto = false) {
+        
         $.ajax({
             url        : url+"/sendemail",
             type       : "post",
@@ -417,7 +444,8 @@ class Dsifronprocs {
                            link : link, 
                            id : id, 
                            idfld : idfld,
-                           tbl : tbl
+                           tbl : tbl,
+                           emailto : emailto
                         },
             success    : function(){
                 if (somefunction != false) {
@@ -452,7 +480,7 @@ class Dsifronprocs {
         });
     }
 
-    updateentries(theitems, table, thekey, keyfld, somefunction) {
+    updateentries(theitems, table, thekey, keyfld, somefunction = false) {
         $.ajax({
             url     : url+"/updatefields",
             type    : "post",
@@ -463,7 +491,9 @@ class Dsifronprocs {
                         },
             dataType: "json",
             success : function(data) {
-                somefunction(data);
+                if (somefunction != false) {
+                    somefunction(data);
+                }
             }, error: function(){
                 alert("Error updating");
             }
@@ -554,6 +584,86 @@ class Dsifronprocs {
                 alert("Error total cost")
             }
         })
+    }
+
+    updatemultipleitems(thevalue, table, pkidstoupdate ,fieldtoupdate , pkfield, somefunction = false ) {
+        
+        $.ajax({
+            url     : url+"/updatemultipleitems",
+            type    : "post",
+            data    : {
+                thevalue      : thevalue,
+                table         : table,
+                pkidstoupdate : pkidstoupdate,
+                fieldtoupdate : fieldtoupdate,
+                pkfield       : pkfield
+            }, dataType : "json",
+            success : function(data){
+                if (somefunction != false) {
+                    somefunction(data);
+                }
+            }, error : function(){
+                alert("error saving to Subtotal table");
+            }
+        })
+    }
+
+    loadmarkups(groupid, somefunction = false) {
+        $.ajax({
+            url      : url+"/loadmarkups",
+            type     : "post",
+            data     : { groupid : groupid },
+            dataType : "html",
+            success  : function(data){
+                if (somefunction != false) {
+                    somefunction(data);
+                }
+            }, error : function(){
+                alert("error retrieving mark ups");
+            }
+        });
+    }
+
+    callawindow(uniqueid, windowtocall, somefunction = false) {
+        $.ajax({
+            url      : url+"/"+windowtocall,
+            type     : "post",
+            data     : { uniqueid : uniqueid },
+            dataType : "html",
+            success  : function(data){
+                if (somefunction != false) {
+                    somefunction(data);
+                }
+            }, error : function(){
+                alert("error getting the window");
+            }
+        });
+    }
+
+    checkitemneedsapproval(grpidfk, somefunction = false) {
+        $.ajax({
+            url      :  url+"/checkitemneedsapproval",
+            type     : "post",
+            data     : { grpidfk : grpidfk },
+            dataType : "html",
+            success  : function(data){
+
+                if (data != "0" || data != 0) {
+                    needsapproval = true;
+                    $(document).find("#checkformarkups").html(data);
+                } else {
+                    needsapproval = false;
+                    $(document).find("#checkformarkups").html("");
+                }
+
+                if (somefunction != false) {
+                    somefunction(data);
+                }
+                
+            }, error : function(){
+                alert("error checking items that needs approval");
+            }
+        });
     }
 
     // callgrandtotal(id, affectid) {

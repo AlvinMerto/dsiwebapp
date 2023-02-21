@@ -14,22 +14,37 @@ use App\Models\taxationtbl;
 use App\Models\markuptbl;
 use App\Models\itemstbl;
 use App\Models\contactstbl;
+use App\Models\Productline;
+use App\Models\itemreferencetbl;
+use App\Models\emaillinkstbl;
+use App\Models\AllowedUser;
+
+use App\Models\GlobalComputation;
 
 use DB;
 
 class QuotationsController extends Controller
 {
-    function quotes(Request $req, $id = null, $quoteid = null) {
+    function quotes(Request $req, $id = null, $quoteid = null, $approvalcode = null, $reqsid = null, $aprvcode = null) {
+        date_default_timezone_set("asia/manila");
+
         if ($id == null) {
+            $datetoday = date("Y-m-d");
+
+            $update    = DB::select(DB::raw("update quotation_corners set status = '7' where status in ('0','1','2') and quotevalidity < {$datetoday}"));
+
             $allquotes = DB::table("quotation_corners")
-                            ->select("quotation_corners.quotedate","quotation_corners.quoteid","quotation_corners.status",
+                            ->select("quotation_corners.quotedate","quotation_corners.quotationname",
+                                     "quotation_corners.quoteid","quotation_corners.status",
                                      "customerstbls.companyname","customerstbls.id",
                                      "totalpricetbls.total")
                             ->join("totalpricetbls", "quotation_corners.quoteid","=","totalpricetbls.quoteidfk")
-                            ->join("customerstbls", "quotation_corners.custidfk","=","customerstbls.id")->get();
+                            ->join("customerstbls", "quotation_corners.custidfk","=","customerstbls.id")
+                            ->orderByRaw("quotation_corners.quoteid DESC")->get();
                             //->join("users","quotation_corners.custidfk","=","users.id")->get();
 
-            return view("listofallquotes",compact("allquotes"));
+            $allcust   = Customerstbl::all();
+            return view("listofallquotes",compact("allquotes","allcust"));
         } else {
             $data      = customerstbl::where("id",$id)->get();
             $allcust   = customerstbl::all();
@@ -68,10 +83,12 @@ class QuotationsController extends Controller
                     $tptbls     = Totalpricetbl::create($ddd);
                 // end 
                 
-                return redirect("quotes/{$id}/$quoteid");
+               // return redirect()->route('quotes', ['id' => $id,'quoteid'=>$quoteid]);
+               return redirect("quotes/{$id}/$quoteid");
             } else {
                 // retrieve the quotation's information
                 // $quotedets = Totalpricetbl::where("quoteidfk",$quoteid)->get();
+
                 $quotedets    = DB::table("totalpricetbls")
                                     ->select("totalpricetbls.*","users.name")
                                     ->join("users","totalpricetbls.inputby","=","users.id")
@@ -93,16 +110,90 @@ class QuotationsController extends Controller
                         $updateqt      = QuotationCorner::where("quoteid", $quoteid)->update(["status"=>"7"]);
                         $overallqtdets = QuotationCorner::where("quoteid", $quoteid)->get();
                     }
-                } 
+                }
+
+                // get the list of users with access 
+                    $haveaccess = GlobalComputation::listofusers("quotation_corners", $quoteid);
+                // end list of users with access
+
+                // check owner 
+                    $owner   = $overallqtdets[0]->inputby;
+                    $viewer  = Auth::id();
+
+                    $allowed = false;
+                    $isowner = false;
+
+                    if ($owner == $viewer) {
+                        $allowed = true;
+                        $isowner = true;
+                    } else {
+                        $allowed = GlobalComputation::checkifhaveaccess($viewer, "quotation_corners" ,$quoteid);
+                    }
+                // end check
+
+                // approve btn
+                    $showapprovebtn = null;
+
+                    // asking for approval
+                    //$showallowbtn  = false;
+                    $allowdetails  = null;
+                    if ($approvalcode != null) {
+                        if ($approvalcode == "askingpermission") {
+                            if ($reqsid == null) {
+                                die("Requestor ID is not set"); return;
+                            } else {
+                                $requestdetails = DB::select(
+                                    DB::raw("select allowed_users.alloweduser, users.name from allowed_users
+                                            join users on allowed_users.alloweduser = users.id 
+                                            where allowed_users.alloweduser = '{$reqsid}' 
+                                            and allowed_users.idfk = '{$quoteid}'")
+                                );
+                                                               
+                                if (count($requestdetails) == 0) {
+                                    die("No request found"); return;
+                                }
+
+                                // http://localhost:8000/approve/55/a545f2d7d55a670c3d9ecaba0d628a03
+                                $allowdetails = [
+                                    "req"           => $requestdetails[0]->name,
+                                    "approvelink"   => url('')."/approve/55/{$aprvcode}"
+                                ];
+
+                                // $showallowbtn = true;
+                            }
+                        } else {
+                            $loggedinemail = Auth::user()['email'];
+
+                            $checklink = emaillinkstbl::where(["thecode"=>$approvalcode,"approver"=>$loggedinemail,"idfk"=>$quoteid])->get();
+
+                            if (count($checklink) > 0) {
+                                $showapprovebtn = url('')."/approve/{$quoteid}/{$approvalcode}";
+                            } else {
+                                die("There is something wrong with the link you browsed"); 
+                            }
+                        }
+                    }
+                // end approve
 
                 $contacts = contactstbl::where("custidfk", $id)->get(["contid","contactname"]);
 
                 $categories   = DB::select(DB::raw("select distinct(category) from itemstbls"));
+
             }
 
-            $percentage = markuptbl::all();
+            $percentage  = markuptbl::all();
+            
+            // $data 
+            $initials = explode(" ", $data[0]->companyname);
 
-            return view("quotations", compact('data','allcust', 'quoteid','quotedets','percentage','empdata','categories','contacts','overallqtdets'));
+            $ints     = null;
+            if (count($initials) == 1) {
+                $ints = $data[0]->companyname[0].$data[0]->companyname[1];
+            } else if (count($initials) >= 2) {
+                $ints = $initials[0][0].$initials[1][0];
+            }
+
+            return view("quotations", compact('data','allcust','ints','quoteid','quotedets','percentage','empdata','categories','contacts','overallqtdets','showapprovebtn','allowed','allowdetails','haveaccess','isowner'));
         }
     }
 
@@ -147,10 +238,19 @@ class QuotationsController extends Controller
     }
 
     function additem(Request $req) {
-        $percentage = markuptbl::all();
+        $percentage   = markuptbl::all();
+        $itemtype     = DB::select(DB::raw("select * from productlines group by thegrpid"));
 
         $itemgrpid  = md5(md5(md5(date("mdyhis"))));
-        return view("quotesapplets.additem", compact("percentage","itemgrpid"));
+        return view("quotesapplets.additem", compact("percentage","itemtype","itemgrpid"));
+    }
+
+    function loadmarkups(Request $req) {
+        $groupid = $req->input("groupid");
+
+        $markups = Productline::where("thegrpid",$groupid)->get("minimummarkup");
+
+        return view("quotesapplets.percentageselect", compact("markups"));
     }
 
     function computetotal(Request $req) {
@@ -167,12 +267,14 @@ class QuotationsController extends Controller
         // $taxation = taxationtbl::where(["custidfk"=>$custidfk,"status"=>1])->get(); 
         $taxation = Totalpricetbl::where("quoteidfk",$quoteid)->get("taxpercentage");
 
-        $markup   = markuptbl::get("thevalue")->toArray();
+        // $markup   = markuptbl::get("thevalue")->min("thevalue");
+        // $markup      = GlobalComputation::getminimummarkup();
 
-        $mmm      = [];
-        foreach($markup as $mm) {
-           array_push($mmm,$mm['thevalue']);
-        }
+        // echo "hello".$markup; return;
+        // $mmm      = [];
+        // foreach($markup as $mm) {
+        //    array_push($mmm,$mm['thevalue']);
+        // }
 
         $thetax   = ($taxation[0]->taxpercentage/100);
         $fulltax  = $taxation[0]->taxpercentage;
@@ -202,27 +304,33 @@ class QuotationsController extends Controller
                     // $values['Tax']      += ($d->extended*0.12);
                 }
 
-                // if mark up is not within the specified mark up, set the quote's status to 0
-                    if ($found == true) {
-                        if (in_array($d->markupvalue, $mmm)) {
-                        $found = true;
-                        } else {
-                        $found = false;
-                        }
-                    }
-                // end 
+                // foreach($markup as $mk) {
+                //     if ($d->productlineid == $mk->thegrpid) {
+                //         //if ($found == true) {
+                //             if ($d->markupvalue < $mk->minimum) {
+                //                 $found = false;
+                //                 $updateitemstatus
+                //             } else {
+                //                 $found = true;
+                //             }
+                //         //}
+                //     }
+                // }
+
             }
 
-            if ($found == false) {
-                $updateqtstatus = QuotationCorner::where(["quoteid"=>$quoteid, "status"=>"1"])->update(["status"=>"0"]);
-            } else {
-                $updateqtstatus = QuotationCorner::where(["quoteid"=>$quoteid, "status"=>"0"])->update(["status"=>"1"]);
-            }
+            // if ($found == false) {
+            //     $updateqtstatus = QuotationCorner::where(["quoteid"=>$quoteid, "status"=>"1"])->update(["status"=>"0"]);
+            // } else {
+            //     $updateqtstatus = QuotationCorner::where(["quoteid"=>$quoteid, "status"=>"0"])->update(["status"=>"1"]);
+            // }
             
 
             $values['GP']       = (($values['Extended']-$values['Cost'])/$values['Extended'])*100;
             $values['Subtotal'] = $values['Extended'];
             $values['Total']    = $values['Subtotal']+$values['Tax'];
+        } else {
+            $updateqtstatus = QuotationCorner::where(["quoteid"=>$quoteid, "status"=>"0"])->update(["status"=>"1"]);
         }
 
     //    $values['taxpercentage']
@@ -237,24 +345,13 @@ class QuotationsController extends Controller
             "tax" 	        => $values['Tax'],
             "taxpercentage" => $fulltax,
             "total" 	    => $values['Total'],
-            "inputby" 	    => Auth::id(),
+            // "inputby" 	    => Auth::id(),
             "status"        => '1'
         ];
 
         $totaltbl = Totalpricetbl::updateOrCreate(
             ["quoteidfk" => $quoteid], $details
         );
-
-        // end saving
-
-        // update quotation corner
-        // $quotecorner = [
-        //     "taxused"    => $thetax,
-        //     "quoteprice" => 
-        // ];
-        
-        // $updatequotecorner = QuotationCorner::where("quoteid",$quoteid)->update();
-        // end 
 
         return view("quotesapplets.computation", compact('data','values'));
     }
@@ -268,15 +365,69 @@ class QuotationsController extends Controller
             )
         );
 
-        return view("quotesapplets.quotetable", compact("quotesinformation"));
+        $owner = QuotationCorner::where("quoteid",$quoteid)->get("inputby");
+
+        $viewer = Auth::id();
+
+        $allowed = false;
+        if ($owner[0]->inputby == $viewer) {
+            $allowed = true;
+        } else {
+            $allowed = GlobalComputation::checkifhaveaccess($viewer, "quotation_corners" ,$quoteid);
+        }
+
+        return view("quotesapplets.quotetable", compact("quotesinformation","allowed"));
     }
 
     function displayperitem(Request $req) {
         $uniqueid = $req->input("uniqueid");
-        
-        // $uniqueid = 19;
+        $custid   = $req->input("info");
+
         $data = Quoteitemstbl::where("quoteitemid",$uniqueid)->get();
         
+        // compute here
+            $compute = new GlobalComputation();
+            $compute->unitcost          = $data[0]->itemcost;
+            $compute->unitcostmarkup    = $data[0]->markupvalue;
+            $compute->qty               = $data[0]->qty;
+
+            if ($data[0]->withshipping != null) {
+                $compute->withshipping      = true;
+                $compute->shipcostmarkup    = $data[0]->shippingmarkup;
+                $compute->shipcost          = $data[0]->shippingcost;
+            }
+
+            $compute->custint               = $custid;
+        // end compute
+
+        // start compute
+            $compute->compute();
+        // end 
+
+        // product line id 
+            $minimummarkup = GlobalComputation::checkminimummarkup($data[0]->productlineid);
+            
+            $status = null;
+
+            if ($compute->unitcostmarkup < $minimummarkup) {
+                $status = "0";
+            } else {
+                $status = "1";
+            }
+        // end 
+
+        // get the values 
+            $update    = Quoteitemstbl::where("quoteitemid",$uniqueid)
+                                    ->update([
+                                        "profit"                => $compute->profit,
+                                        "price"                 => $compute->sellprice,
+                                        "extended"              => $compute->extended,
+                                        "shippingfinalprice"    => $compute->totalshipcost,
+                                        "status"                => $status
+                                    ]);
+        // end 
+        
+        $data = Quoteitemstbl::where("quoteitemid",$uniqueid)->get();
         return view("quotesapplets.displayperitem", compact('data'));
     }
 
@@ -297,89 +448,82 @@ class QuotationsController extends Controller
         
         $custint      = $ciinfo[0]->interest;
 
-        // defaults 
-            $markup     = $details[0]->markupvalue;
-            $itemcost   = $details[0]->itemcost;
-            $qty        = $details[0]->qty;
-            $price      = $details[0]->price;
-            $extended   = $details[0]->extended;
-            $profit     = $details[0]->profit;
+        // set defaults
+        $compute                    = new GlobalComputation();
+        $compute->unitcost          = $details[0]->itemcost;
+        $compute->unitcostmarkup    = $details[0]->markupvalue;
+        $compute->qty               = $details[0]->qty;
+
+        $compute->sellprice         = $details[0]->price;
+        $compute->extended          = $details[0]->extended;
+        $compute->profit            = $details[0]->profit;
         // end 
 
-        if ($fld == "markupvalue") { 
-            $markup = $val; 
-            // if markup value is not within the specified values, set the quote to for approval
+        if ($details[0]->withshipping != null) {
+            $compute->withshipping      = true;
+            $compute->shipcostmarkup    = $details[0]->shippingmarkup;
+            $compute->shipcost          = $details[0]->shippingcost;
         }
 
-        if ($fld == "itemcost") { 
-            $itemcost = $val;
+        $compute->custint           = $ciinfo[0]->interest;
+
+        // item
+        if ($fld == "markupvalue") { $compute->unitcostmarkup = $val; }
+        if ($fld == "itemcost") { $compute->unitcost = $val; }
+        if ($fld == "qty") { $compute->qty = $val; }
+
+        // shipping
+        if ($fld == "shippingcost") { $compute->shipcost = $val; }
+        if ($fld == "shippingmarkup") { $compute->shipcostmarkup = $val; }
+
+        if ($compute->shipcost == 0) {
+            $compute->withshipping      = null;
+            $compute->shipcostmarkup    = "0";
+            $compute->shipcost          = "0";
         }
 
-        if ($fld == "qty") { $qty = $val; }
-        if ($fld == "price") { $price = $val; }
+        $minimummarkup = GlobalComputation::checkminimummarkup($details[0]->productlineid);
 
-        // itemcost 
-            $totalitemcost = $itemcost*$qty;
-
-        // if private
-            if ((int) $custint == 2) { // private
-                $grt   = ($itemcost*.05);
-                $price = ($itemcost+$grt);
-            }
-        // end private
-
-        if ($markup > 0) {
-        // change price
-            $per      = (100/$markup);
-            $addon    = $itemcost/$per;
-            $price    = $itemcost+$addon;
-
-            // if private 
-            if ((int) $custint == 2) { // private
-                $grt   = ($price*.05);
-                $price = ($price+$grt);
-            }
-            // end if private
-
-        // change extended price
-            $extended = $price*$qty;
-
-        // change profit
-            $profit   = ceil($extended)-$totalitemcost;
-            
-        } else {           
-            // $price    = $itemcost;
-            $extended = $price*$qty;
-            // $profit   = "0";
-            if ((int) $custint == 2) { // private
-                $profit = (ceil($extended)-$totalitemcost);
-            } else {
-                $profit = 0;
-            }
+        $status = null;
+        if ($compute->unitcostmarkup < $minimummarkup) {
+            $status = "0";
+        } else {
+            $status = "1";
         }
 
-        $data = [
-            "markupvalue"   => $markup,
-            "itemcost"      => $itemcost,
-            "qty"           => $qty,
-            "price"         => ceil($price),
-            "extended"      => ceil($extended),
-            "profit"        => $profit
-        ];
+        // start compute 
+            $compute->compute();
+        // end 
 
         $returndata = [
-            "markupvalue"   => $markup,
-            "itemcost"      => number_format($itemcost,2),
-            "qty"           => $qty,
-            "price"         => number_format(ceil($price),2),
-            "extended"      => number_format(ceil($extended),2),
-            "profit"        => number_format($profit,2)
+            "profit"                => $compute->profit,
+            "itemcost"              => $compute->unitcost,
+            "markupvalue"           => $compute->unitcostmarkup,
+            "price"                 => $compute->sellprice,
+            "extended"              => $compute->extended,
+            "shippingfinalprice"    => $compute->totalshipcost,
+            "withshipping"          => $compute->withshipping,
+            "shippingcost"          => $compute->shipcost,
+            "shippingmarkup"        => $compute->shipcostmarkup,
+            "status"                => $status
         ];
 
-        $update = Quoteitemstbl::where("quoteitemid",$id)->update($data);
+        $update    = Quoteitemstbl::where("quoteitemid",$id)->update($returndata);
 
-        return response()->json($returndata);
-        // return response()->json($custint);
+        $returndata1 = [
+            "profit"                => number_format($compute->profit,2),
+            "itemcost"              => number_format($compute->unitcost,2),
+            "markupvalue"           => number_format($compute->unitcostmarkup,1),
+            "price"                 => number_format($compute->sellprice,2),
+            "extended"              => number_format($compute->extended,2),
+            "shippingfinalprice"    => number_format($compute->totalshipcost,2),
+            "withshipping"          => $compute->withshipping,
+            "shippingcost"          => number_format($compute->shipcost,2),
+            "shippingmarkup"        => $compute->shipcostmarkup
+        ];
+
+        return response()->json($returndata1);
+       
     }
 
     function taxationtbl(Request $req) {
@@ -401,19 +545,46 @@ class QuotationsController extends Controller
     }
 
     function checkformarkups(Request $req) {
-        $quoteidfk = $req->input("quoteidfk");
-        $quotecorner = QuotationCorner::where("quoteid",$quoteidfk)->get("status");
+        // $quoteitemid       = "29";
+        $quoteitemid    = $req->input("quoteitemid");
 
-        if (count($quotecorner) == 0) {
-            return response()->json("NO DATA FOUND");
+        $itemdetails    = Quoteitemstbl::where("quoteitemid",$quoteitemid)->get(["productlineid","markupvalue","quoteidfk"]);
+        $markups        = GlobalComputation::checkminimummarkup($itemdetails[0]->productlineid);
+        // $markups        = GlobalComputation::getminimummarkup();
+
+        $quoteidfk      = $itemdetails[0]->quoteidfk;
+        // $markupstandard = null;
+  
+        // foreach($markups as $mk) {
+        //     if ($mk->thegrpid == $itemdetails[0]->productlineid) {
+        //         $markupstandard = $mk->minimum;
+        //     }
+        // }
+    
+        $status = null;
+
+        if ($itemdetails[0]->markupvalue < $markups) {
+            $status = "0";
         } else {
-            $status = $quotecorner[0]->status;
+            $status = "1";
+        }
 
-            if ($status == 0 || $status == "0") { // for approval
-                return view("quotesapplets.checkformarkups", compact("quoteidfk"));
-            } else {
-                return response()->json(0);
-            }
+        $updateitemstatus  = Quoteitemstbl::where("quoteitemid",$quoteitemid)->update(["status" => $status]);
+        
+        if ($status == "0" || $status == 0) {
+            return view("quotesapplets.checkformarkups", compact("quoteidfk"));
+        } else {
+            return response()->json(0);
+        }
+    }
+
+    function checkitemneedsapproval(Request $req) {
+        $quoteidfk = $req->input("grpidfk");
+        // var_dump($quoteidfk);
+        if (GlobalComputation::checkneedsapproval($quoteidfk) == true) {
+            return view("quotesapplets.checkformarkups", compact("quoteidfk"));
+        } else {
+            return response()->json(0);
         }
     }
 
@@ -432,25 +603,6 @@ class QuotationsController extends Controller
 
     function fileupload(Request $request, $cats = false) {
         $file 	 	 = $request->file("itemuploadfile");
-    	// $paytitle    = $request->input("payrolltitle");
-
-    	// $origfn      = $file->getClientOriginalName();
-    	// $origext     = $file->getClientOriginalExtension();
-
-    	// if ($origext != "csv") {
-    	// 	// return "The file you uploaded is not a valid CSV file";
-    	// }
-
-    	// $newname     = md5($origfn.date("mdyhis"));
-
-    	// $destination = storage_path("uploads");
-    	// $newpathname = $newname.".".$origext;
-
-    	// $a 			 = $file->move($destination,$newpathname);
-
-    	// // open the file 
-    	// $fpath  	 = storage_path("uploads/".$newpathname);
-    	//$tfile 		 = fopen($fpath,"r");
         $tfile 		 = fopen($file,"r");
 
         $count       = 0;
@@ -524,6 +676,35 @@ class QuotationsController extends Controller
                 return response()->json("false");
             }
         }
+    }
+
+    function viewitemdetails(Request $req) {
+        $uniqueid  = $req->input("uniqueid");
+
+        $data      = Quoteitemstbl::where("quoteitemid",$uniqueid)->get();
+
+        $otherinfo = itemreferencetbl::where("theitemid",$uniqueid)->get();
+
+        $itemgrpid = md5(md5(md5(date("mdyhisA"))));
+
+        if (count($otherinfo) > 0) {
+            $itemgrpid = $otherinfo[0]->itemgrpid;
+        }
+
+        return view("quotesapplets.viewitemdetails", compact("data","otherinfo","itemgrpid"));
+    }
+
+    function insertotheritems(Request $req) {
+        $percentage   = markuptbl::all();
+        $itemtype     = DB::select(DB::raw("select * from productlines group by thegrpid"));
+
+        $itemgrpid  = md5(md5(md5(date("mdyhis"))));
+        
+        return view("quotesapplets.insertotheritem",compact("percentage","itemtype","itemgrpid"));
+    }
+
+    function loadingcomments(Request $req) {
+        return view ("quotesapplets.itemcomment");
     }
 
 }

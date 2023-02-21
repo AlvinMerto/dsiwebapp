@@ -20,6 +20,7 @@ return new class extends Migration
             $table->string("contidfk")->nullable();
             $table->datetime("processeddate")->nullable();
             $table->string("bulkorderid")->nullable();
+            $table->string("weeknumber")->nullable();
             $table->string("vendor")->nullable();
             $table->string("description")->nullable();
             $table->string("qty")->nullable();

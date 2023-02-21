@@ -23,6 +23,8 @@ class Processhandler extends Controller
 {
     //
     function savetodatabase(Request $req) {
+        date_default_timezone_set("asia/manila");
+        
         $data = (array) $req->input("thedata");
 
         if ($req->input("action") == false || $req->input("action") == "false") {
@@ -263,16 +265,28 @@ class Processhandler extends Controller
         $idfld   = $req->input("idfld");
         $tbl     = $req->input("tbl");
 
-        $to       = "ajbmerto@gmail.com";
-        $emailto  = "Alvin Merto";
+        $emailto    = $req->input("emailto");
+
+        $thecode    = md5(md5(md5(date("mdyhis"))));
 
         $id       = Auth::id();
         $empreq   = User::where("id",$id)->get(["name","email"])->toArray();
 
+        $appendcode = null;
+        if ($emailto == false || $emailto == "false") {
+            // $to       = "ajbmerto@gmail.com";
+            $to         = "Alvin@dimensionsystems.com";
+            $emailto    = "Alvin Merto DSI";
+            $appendcode = "/".$thecode;
+        } else {
+            $sendtodetails = User::where("id",$emailto)->get(["name","email"]);
+            $to       = $sendtodetails[0]->email;
+            $emailto  = $sendtodetails[0]->name;
+            $appendcode = "/askingpermission/".$id."/".$thecode;
+        }
+
         $from     = $empreq[0]['email'];
         $fromname = $empreq[0]['name'];
-
-        $thecode  = md5(md5(md5(date("mdyhis"))));
 
         $emaillink = [
             "thecode"        => $thecode,
@@ -288,10 +302,11 @@ class Processhandler extends Controller
 
         $saveemaillink = emaillinkstbl::create($emaillink);
 
+        
         $info    = ['paytitle'    => $subject, 
                     'email'       => $to,
                     'emailto'     => $emailto,
-                    'link'        => $link,
+                    'link'        => $link.$appendcode, 
                     'subject'     => $subject,
                     'fromemail'   => $from,
                     'fromname'    => $fromname,
@@ -425,5 +440,24 @@ class Processhandler extends Controller
         // $table  = $recips[0]->tablefrom;
         // $tblid  = $recips[0]->tableid;
 
+    }
+
+    public function updatemultipleitems(Request $req) {
+        $thevalue       = $req->input("thevalue");
+        $table          = $req->input("table");
+        $pkidstoupdate  = (array) $req->input("pkidstoupdate");
+        $pkfield        = $req->input("pkfield");
+        $fieldtoupdate  = $req->input("fieldtoupdate");
+
+        $updated        = false;
+        foreach($pkidstoupdate as $pks) {
+            $updated = Quoteitemstbl::where($pkfield,$pks)->update($fieldtoupdate,$thevalue);
+        }
+
+        return response()->json($updated);
+    }
+
+    public function reroute($id = null, $action = null, $routeto = null) {
+        return redirect($routeto."/".$id."/".$action);
     }
 }

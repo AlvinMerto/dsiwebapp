@@ -9,8 +9,9 @@
         <title> Quotation for <?php echo $data[0]->companyname; ?> </title>
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
-    <body style="font-family: 'Alegreya Sans', sans-serif; font-size: 1.1rem;">
+    <body style="font-family: 'Alegreya Sans', sans-serif; font-size: 1.1rem; background: #ccc;">
         <div class='custbigdiv pd-l-30 pd-r-30'>
+            <?php if($ispreview == false) { ?>
             <div class='leftfloatdiv'>
                 <?php
                     switch($quotestatus) {
@@ -33,12 +34,13 @@
                     <a href='#ouroffer'> <i class="fa fa-angle-right" aria-hidden="true"></i> &nbsp; Our Offer </a> <br/>
                     <a href='#termsandcondition'> <i class="fa fa-angle-right" aria-hidden="true"></i> &nbsp; Terms and Condition </a>
                 </div> <?php // echo $quoteid; ?>
-                <?php if ($quotestatus != "ORDERED") { ?>
+                <?php if ($quotestatus == "valid") { ?>
                     <p style='text-align: center; position: absolute;bottom: 0;width: 100%;'> 
                         <a href='#' data-toggle='modal' data-target='#acceptandsigndiv' class='acceptandsignbtn'> Accept and Sign </a> 
                     </p>
                 <?php } ?>
             </div>
+            <?php } ?>
             <div class='row' id='ouroffer'>
                 <div class='col-md-12 custquoteheader' style="background-image:url('{{url('images/quotation_template_03.png')}}');padding: 79px 0px;background-repeat: no-repeat;">
 
@@ -87,6 +89,7 @@
                     <table class='custquotetbl'>
                         <tr>
                             <th> NO. </th>
+                            <th> Part # </th>
                             <th> DESCRIPTION </th>
                             <th> PRICE </th>
                             <th> QTY </th>
@@ -98,6 +101,7 @@
                                 foreach($data as $d) {
                                     echo "<tr>";
                                         echo "<td>{$count}</td>";
+                                        echo "<td>{$d->manupart}</td>";
                                         echo "<td>{$d->itemdesc}</td>";
                                         echo "<td>".number_format($d->price,2)."</td>";
                                         echo "<td>{$d->qty}</td>";

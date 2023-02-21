@@ -5,6 +5,9 @@
         <div class='dsibox pd-20'>
             <h1> dashboard </h1>
         </div>
+        <div class='pd-25'>
+            <a href="{{route('productline')}}"> Add Product Line </a>
+        </div>
     </div>
 </div>
 

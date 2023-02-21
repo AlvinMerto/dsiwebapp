@@ -79,14 +79,18 @@
                                                     <span class=""><?php echo htmlspecialchars_decode(stripslashes($msg)); ?></span>
 		                                        </td>
 		                                    </tr>
-		                                    <tr>
-		                                        <td style="width:40%;padding-left:10%">
-		                                            <span class="">opt out notification</span>
-		                                        </td>
-		                                        <td style="width:60%;padding:2% 5% 2% 5%; font-weight: bold; font-size: 18px; color: #4b4b4b;">
-                                                    <span class=""><a href='<?php echo $link; ?>'> deactivate notification </a></span>
-		                                        </td>
-		                                    </tr>
+
+											<?php if(isset($link)) { ?>
+												<tr>
+													<td style="width:40%;padding-left:10%">
+														<span class="">opt out notification</span>
+													</td>
+													<td style="width:60%;padding:2% 5% 2% 5%; font-weight: bold; font-size: 18px; color: #4b4b4b;">
+														<span class=""><a href='<?php echo $link; ?>'> deactivate notification </a></span>
+													</td>
+												</tr>
+											<?php } ?>
+
 		                                    <tr>
 		                                        <td align="center" colspan="2">&nbsp;</td>
 		                                    </tr>

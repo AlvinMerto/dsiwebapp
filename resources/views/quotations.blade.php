@@ -1,231 +1,64 @@
 <x-app-layout>
     <?php $compname = $data[0]->companyname." Quotation"; ?>
     @section("title",$compname)
-   <div class="br-mainpanel pd-30">
+
+    <?php if ($overallqtdets[0]->status == 6 || $overallqtdets[0]->status == 7 || $overallqtdets[0]->status == 0) { ?>
+    <div class="alert alert-danger" style="z-index: 100000000000000000;position: fixed;bottom: 0;width: 100%;text-align: center;box-shadow: 0px 3px 9px #a2a2a2;margin-bottom: 0px;">
+       <?php 
+            Switch($overallqtdets[0]->status) {
+                case "0": echo "Subject for Approval"; break;
+                case "6": echo "Cancelled"; break;
+                case "7": echo "Expired"; break;
+            }
+       ?>
+    </div>
+    <?php } ?>
+    <?php if ($showapprovebtn != null) { ?>
+        <div class='showapprovediv'>
+            <a class='dsibutton' href='<?php echo $showapprovebtn ?>'> APPROVE </a>
+        </div>
+    <?php } ?>
+
+    <?php if ( is_array($allowdetails)) { ?>
+        <div class='showapprovediv'>
+            <p> <strong> <?php echo $allowdetails['req']; ?> is asking permission to edit this quotation. </strong> </p>
+            <a href="<?php echo $allowdetails['approvelink']; ?>" class='dsibutton' target='_blank'> Give Permission </a>
+        </div>
+    <?php } ?>
+   <div class="br-mainpanel pd-15">
         <div class=''>
             <div class='row'>
-                <div class='col-md-2 pd-r-0'>
-                    <div class='pd-l-0'>
-                        <div style="min-height: 800px; background: #fff;border: 1px solid #dfdede;border-radius: 10px 10px 0px 0px;" class="pd-t-10 pd-r-0 pd-l-10">
-                            <div class='row dsibox pd-b-10 pd-t-10'>
-                                <div class='col-md-4'>
-                                    <div class='companyprof'>
-                                        <img src="http://localhost:8000/images/DSC_5694.jpg">
-                                    </div>
-                                </div>
-                                <div class='col-md-8 pd-l-0 removepmarg'>
-                                    <strong class='dsitxt'>
-                                        <p>
-                                        <?php 
-                                            if ($data != null) {
-                                                if (strlen($data[0]->companyname)==0) {
-                                                    echo "N/A";
-                                                } else {
-                                                    echo "<span id = 'savetonewclient' data-toggle='modal' data-target='#savetonewcustomer'> ".$data[0]->companyname ." <i class='icon ion-edit' style='font-size:10px;'></i>  </span>";
-                                                }
-                                            }
-                                        ?>
-                                        </p>
-                                    </strong>
-                                    <small style="font-size: 13px;"> 
-                                        <?php 
-                                            if (count($empdata) > 0) {
-                                                echo $empdata[0]->theinterest;
-                                            } else {
-                                                echo "no interest specified";
-                                            }
-                                        ?>
-                                    </small> <br/> <br/>
-                                    <a class='fullwidth' style="color: #a4a3a3;font-size: 13px;text-decoration: underline;" target='_blank' href="<?php echo route('customer')."/".$data[0]->id; ?>"> Go to Profile </a>
-                                </div>
-                            </div>
-                            <div id ='checkformarkups' style='text-align:center;'> 
-                                checking...
-                            </div>
-                            <div class='dsibox mg-b-20 pd-r-10 pd-t-5' id='totaldiv' style='text-align:center;'> Computing.. </div>
-                            <table class='removepmarg dsibox dsiflattable'>
-                                <tr>
-                                    <th colspan='2' style='padding-bottom: 10px;'> Quotation Details </th>
-                                </tr>
-                                <tr>
-                                    <td> <p> Status: </p>
-                                        <strong class='dsitxt'>
-                                            <?php
-                                                if (count($overallqtdets) > 0) {
-                                                    if ($overallqtdets[0]->status == 1) {
-                                                        echo "Quotation";
-                                                    } else if ($overallqtdets[0]->status == 0) {
-                                                        echo "Subject for Approval";
-                                                    } else if ($overallqtdets[0]->status == 3) {
-                                                        echo "Sales";
-                                                    } else if ($overallqtdets[0]->status == 2) {
-                                                        echo "APPROVED";
-                                                    } else if ($overallqtdets[0]->status == 6) {
-                                                        echo "Cancelled"; 
-                                                    } else if ($overallqtdets[0]->status == 7) {
-                                                        echo "expired"; 
-                                                    }
-                                                }
-                                                // echo " <small id='resetexp' style='cursor:pointer;' data-toggle='modal' data-target='#resetexpiry'> Reset </small>";
-                                            ?>
-                                        </strong> 
-                                    </td>
-                                </tr>
-                                <!-- <tr>
-                                    <td> <p> Tax %: </p>
-                                        <input type="text" 
-                                            class="thetextinput" 
-                                            data-fld="taxpercentage" 
-                                            data-idfld="tptblid"
-                                            data-id="<?php //echo $quotedets[0]->tptblid; ?>" 
-                                            data-tbl="totalpricetbls"
-                                            data-callcompute = "true"
-                                            value="<?php //echo $quotedets[0]->taxpercentage; ?>" 
-                                            disabled="disabled"
-                                            style=''>
-                                        <small class="peritemedit"> edit </small>
-                                        </strong> 
-                                    </td>
-                                </tr> -->
-                                <tr>
-                                    <td> <p> Valid until: </p>
-                                        <button class='btn btn-default' 
-                                                id='changevalidity'
-                                                data-toggle='modal'
-                                                data-target='#changevalidityperiod'> 
-                                            <strong class='dsitxt'> <?php echo date("M. d, Y", strtotime($overallqtdets[0]->quotevalidity)); ?> </strong> 
-                                        </button>
-                                        <!-- <strong class='dsitxt'> 
-                                            <input type="date" 
-                                                class="thetextinput" 
-                                                data-fld="quotevalidity" 
-                                                data-idfld="quoteid"
-                                                data-id="<?php // echo $overallqtdets[0]->quoteid; ?>" 
-                                                data-tbl="quotation_corners"
-                                                disabled="disabled"
-                                                style=''>
-                                            <small class="peritemedit"> edit </small>
-                                        </strong>  -->
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td> <p> Date: </p>
-                                        <strong class='dsitxt'> 
-                                            <?php
-                                                echo date("M. d, Y", strtotime($quotedets[0]->created_at));
-                                            ?>
-                                        </strong> 
-                                    </td>
-                                </tr>
-                            
-                                <tr>
-                                    <td> <p> Quoted by: </p>
-                                        <strong class='dsitxt'>
-                                            <?php
-                                                echo $quotedets[0]->name;
-                                            ?>
-                                        </strong> 
-                                    </td>
-                                </tr>
-                            
-                            </table>
-                            <br/>
-                            <!-- <table class='dsismalltable dsibox'>
-                                <tbody>
-                                    <tr>
-                                        <th colspan=2> Basic Information </th>
-                                    </tr>
-                                    <tr>
-                                        <td>Company:</td>
-                                        <td>
-                                            <?php 
-                                                // if ($data != null) {
-                                                //     if (strlen($data[0]->companyname)==0) {
-                                                //         echo "N/A";
-                                                //     } else {
-                                                //         echo "<span id = 'savetonewclient' data-toggle='modal' data-target='#savetonewcustomer'> <i class='icon ion-edit' style='font-size:10px;'></i>".$data[0]->companyname ." </span>";
-                                                //     }
-                                                // }
-                                            ?>    
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>Contact Person:</td>
-                                        <td>
-                                            <?php 
-                                                // if ($data != null) {
-                                                //     if (strlen($data[0]->contactperson)==0) {
-                                                //         echo "N/A";
-                                                //     } else {
-                                                //         echo $data[0]->contactperson;
-                                                //     }
-                                                // }
-                                            ?>   
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>Contact Number:</td>
-                                        <td>
-                                            <?php 
-                                                // if ($data != null) {
-                                                //     if (strlen($data[0]->contactnumber)==0) {
-                                                //         echo "N/A";
-                                                //     } else {
-                                                //         echo $data[0]->contactnumber;
-                                                //     }
-                                                // }
-                                            ?>   
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>Email Address:</td>
-                                        <td>
-                                            <?php 
-                                                // if ($data != null) {
-                                                //     if (strlen($data[0]->email)==0) {
-                                                //         echo "N/A";
-                                                //     } else {
-                                                //         echo $data[0]->email;
-                                                //     }
-                                                // }
-                                            ?>   
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>Dept:</td>
-                                        <td>
-                                            <?php 
-                                                // if ($data != null) {
-                                                //     if (strlen($data[0]->dept)==0) {
-                                                //         echo "N/A";
-                                                //     } else {
-                                                //         echo $data[0]->dept;
-                                                //     }    
-                                                // }
-                                            ?> 
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table> -->
-                            
-                        <!-- <div class='flex pd-l-20 pd-t-20 pd-b-20 pd-r-20' style='justify-content:center;text-align:center;'>
-                           
-                        </div> -->
+                    <div class='dsibox mg-b-20 pd-r-30 pd-t-15' id='totaldiv' style=''> 
+                        <p style='text-align:center;'> Computing... </p>
                     </div>
+                    <div class='col-md-2 pd-r-0' style='display:none;'>
+                   
                     </div>
                 </div>
-                <div class='col-md-10 pd-l-5' id='motherdiv'>
+                <div class='col-md-12 pd-l-5' id='motherdiv' style='min-height:700px; '>
                     <div class='pd-t-0 pd-b-0 '>
                         <div class='dsibox flex pd-l-0' style="border-bottom: none; border-right: 1px solid #dfdfdf; border-left: 1px solid #dfdfdf;border-radius: 10px 10px 0px 0px;background: #fff;border-top: 1px solid #dfdfdf;">
                         <input type='hidden' value='<?php echo $quoteid; ?>' id='quoteidfk'/>
                         <input type='hidden' value='<?php echo $empdata[0]->interid; ?>' id='interid'/>
                         <input type='hidden' value='<?php echo $empdata[0]->theinterest; ?>' id='intervalue'/>
-                        <div class='flex'>
+                        <!-- <iframe name='iframe_a' id='iframe_a'> </iframe> -->
+                        <div class='flex' style="justify-content: space-between;width: 100%; ">
                                 <ul class='flex smallnavsbtn'>
+                                    <li style="background: #37a000;color: #fff; border-radius: 10px 0px 0px 0px;" data-toggle='modal' data-target='#companyprofile'> <i class="fa fa-id-card-o" aria-hidden="true"></i> &nbsp; Profile </li>
                                     <li> File 
                                         <ul>
                                             <li data-toggle='modal' data-target='#savequote'> <i class="fa fa-floppy-o" aria-hidden="true"></i> &nbsp; Save </li>
-                                            <li data-toggle='modal' data-target='#sendquotation'> <i class="fa fa-paper-plane-o" aria-hidden="true"></i> &nbsp; Send </li>
+                                                
+                                            <?php if ($overallqtdets[0]->quotationsentto == null) { ?>
+                                                <li> Preview: <i style='color:red;'> Please save this quotation first </i> </li>
+                                            <?php } else { ?>
+                                                <a href='<?php echo url('')."/quotation/".$quoteid."/0/true"; ?>' target='_blank'> <li> <i class="fa fa-eye" aria-hidden="true"></i> &nbsp; Preview</li> </a>
+                                            <?php } ?>
+
+                                            <li data-toggle='modal' data-target='#sendquotation'> 
+                                                <i class="fa fa-paper-plane-o" aria-hidden="true"></i> &nbsp; Send 
+                                            </li>
+
                                             <li data-toggle='modal' data-target='#savetonewcustomer'> <i class="fa fa-terminal" aria-hidden="true"></i> &nbsp;Save to new customer </li>
                                             <li id='resetexp' style='cursor:pointer;' data-toggle='modal' data-target='#resetexpiry'> <i class="fa fa-refresh" aria-hidden="true"></i> &nbsp; Reset Quotation Status</li>
                                             <li> <i class="fa fa-download" aria-hidden="true"></i> &nbsp;Download as PDF </li>
@@ -237,26 +70,43 @@
                                             <li> <i class="fa fa-clone" aria-hidden="true"></i> &nbsp;Duplicate </li>
                                         </ul>
                                     </li>
-                                    <li> Insert
+                                    <li> View 
                                         <ul>
-                                            <li data-toggle='modal' data-target='#insertitem' class='callitemssource' data-window='additem'> <i class="fa fa-angle-right" aria-hidden="true"></i> Add Custom Item </li>
-                                            <li data-toggle='modal' data-target='#insertitem' class='callitemssource' data-window='taxable'> <i class="fa fa-angle-right" aria-hidden="true"></i> Insert Item from source </li> 
-                                            <li> <i class="fa fa-angle-right" aria-hidden="true"></i> Subtotal </li>
-                                            <li> <i class="fa fa-angle-right" aria-hidden="true"></i> Labor </li>
-                                            <li> <i class="fa fa-angle-right" aria-hidden="true"></i> Freight </li>
-                                            <li> <i class="fa fa-angle-right" aria-hidden="true"></i> Line </li>
-                                            <li> <i class="fa fa-angle-right" aria-hidden="true"></i> Blank Row </li>
-                                            <li> <i class="fa fa-angle-right" aria-hidden="true"></i> Comment </li>
+                                            <li id='itemdetails' data-toggle='modal' data-target='#viewitemdetails'> Item details </li>
+                                            <li id='userswithaccess' data-toggle='modal' data-target='#viewerswithaccess'> View Users with access </li>
                                         </ul>
                                     </li>
-                                    <li> Convert 
-                                        <ul>
-                                            <li> <i class="fa fa-angle-right" aria-hidden="true"></i> To order </li>
-                                            <li> <i class="fa fa-angle-right" aria-hidden="true"></i> To invoice </li>
-                                            <li> <i class="fa fa-angle-right" aria-hidden="true"></i> To sales </li>
-                                        </ul>
-                                    </li>
+                                    <?php if ($allowed) { ?>
+                                        <li> Insert
+                                            <ul>
+                                                <li data-toggle='modal' data-target='#insertitem' class='callitemssource' data-window='additem' data-backdrop="static" data-keyboard="false"> <i class="fa fa-angle-right" aria-hidden="true"></i> Add Custom Item </li>
+                                                <li data-toggle='modal' data-target='#insertitem' class='callitemssource' data-window='taxable'> <i class="fa fa-angle-right" aria-hidden="true"></i> Insert Item from source </li> 
+                                                <li data-toggle='modal' data-target='#subtotaldiv'> <i class="fa fa-angle-right" aria-hidden="true"></i> Subtotal </li>
+                                                <li data-toggle='modal' data-target='#insertotheritem' class='callwindow' data-window='insertotheritems' data-insertospan='insertotheritemspan'> <i class="fa fa-angle-right" aria-hidden="true"></i> Labor </li>
+                                                <li data-toggle='modal' data-target='#insertotheritem' class='callwindow' data-window='insertotheritems' data-insertospan='insertotheritemspan'> <i class="fa fa-angle-right" aria-hidden="true"></i> Freight </li>
+                                                <!-- <li> <i class="fa fa-angle-right" aria-hidden="true"></i> Line </li>
+                                                <li> <i class="fa fa-angle-right" aria-hidden="true"></i> Blank Row </li> -->
+                                                <li data-toggle='modal' data-target='#addcomment' class='callwindow' data-window='loadingcomments' data-insertospan='loadingcommentsspan'> <i class="fa fa-angle-right" aria-hidden="true"></i> Comment </li>
+                                            </ul>
+                                        </li>
+                                    <?php } ?>
+                                    <?php if ($allowed) { ?>
+                                        <li> Convert 
+                                            <ul>
+                                                <li> <i class="fa fa-angle-right" aria-hidden="true"></i> To order </li>
+                                                <li> <i class="fa fa-angle-right" aria-hidden="true"></i> To invoice </li>
+                                                <li> <i class="fa fa-angle-right" aria-hidden="true"></i> To sales </li>
+                                            </ul>
+                                        </li>
+                                    <?php } ?>
                                 </ul>
+
+                                <?php if ($showapprovebtn == null) { ?>
+                                    <div id ='checkformarkups' style='text-align:center; margin: 3px 4px 2px 2px;'> 
+                                        checking...
+                                    </div>
+                                <?php } ?>
+                                
                         </div>
                             
                     </div>
@@ -264,20 +114,25 @@
             
                 <div class=' pd-l-0'>
                     <!--<h6 class="pageh pd-l-10 pd-t-10 pd-b-10" style="border-right: 1px solid #eaeaea;border-bottom: 1px solid #eaeaea;"> Quotation for <a href='#' data-toggle='modal' data-target='#basicinfodiv' class='thecompname'> <?php // echo $data[0]->companyname; ?> </a>  </h6>--> 
-                        <div class='dsibox minheightdiv bgdiv' id='contextmenu'>
+                        <?php if (!$allowed) { $idcontext = null; } else { $idcontext = "contextmenu"; } ?>
+                        <div class='dsibox minheightdiv bgdiv' id='<?php echo $idcontext; ?>'>
                             <table class='quotestable table-striped'>
                                 <thead>
                                     <tr style="border-right: 1px solid #eaeaea;">
                                         <th> &nbsp; </th>
                                         <th> # </th>
                                         <th> Profit </th>
-                                        <th> Markup </th>
                                         <th> Cost </th>
+                                        <th> Cost: Markup </th>
                                         <th> Supplier </th>
                                         <th> Supplier # </th>
                                         <th> Mfg </th>
                                         <th> Mfg # </th>
+                                        <th> Product Line </th>
                                         <th style="width:250px"> Description </th>
+                                        <th> Ship: Cost </th>
+                                        <th> Ship: Markup </th>
+                                        <th> Ship: Price </th>
                                         <th> Qty </th>
                                         <th> Price </th>
                                         <th> Extended </th>
@@ -288,6 +143,16 @@
                                 <tr> <td colspan="20"> loading... </td> </tr>
                                 </tbody>
                             </table>
+                            <center style="margin-top:10px;" class='pd-t-10 pd-b-10'>
+                                <?php if ($allowed) { ?>
+                                <button class='btn btn-default callitemssource' 
+                                        style="color:#a49f9f;margin-top: 10px;" 
+                                        data-toggle='modal' 
+                                        data-target='#insertitem' data-window='additem'> <i class="fa fa-plus" aria-hidden="true"></i> add item </button>
+                                <?php } else { ?>
+                                    <button class='dsibutton' data-toggle='modal' data-target='#askpermission'> Ask Permission to edit </button>
+                                <?php } ?>
+                            </center>
                         </div>
                     </div>
                 </div>
@@ -297,7 +162,111 @@
 
         </div>
     </div>
+    <div style='height: 85px; width:100%; background:#000;'></div>
 </x-app-layout>
+
+        <div id="addcomment" class="modal fade">
+            <div class="modal-dialog modal-dialog-vertical-center" role="document">
+              <div class="modal-content bd-0 tx-14">
+                <div class="modal-header pd-y-20 pd-x-25">
+                  <h6 class="tx-14 mg-b-0 tx-uppercase tx-inverse tx-bold">Add Comment</h6>
+                  <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                  </button>
+                </div>
+                <div class="modal-body pd-t-10 pd-l-20 pd-r-20">
+                    <span id='loadingcommentsspan'> loading comments ...</span>
+                </div>
+              </div>
+            </div><!-- modal-dialog -->
+        </div><!-- modal -->
+
+<?php if (!$allowed) { ?>
+        <div id="askpermission" class="modal fade">
+            <div class="modal-dialog modal-dialog-vertical-center" role="document">
+              <div class="modal-content bd-0 tx-14">
+                <div class="modal-header pd-y-20 pd-x-25">
+                  <h6 class="tx-14 mg-b-0 tx-uppercase tx-inverse tx-bold">Ask Permission</h6>
+                  <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                  </button>
+                </div>
+                <div class="modal-body pd-25">
+                    <p class='mg-b-5'> Reason </p>
+                    <textarea id='reasontxt' class='dsitxtbox' style='width:300px; height:200px;resize:none;'></textarea>
+                </div>
+                <div class="modal-footer">
+                  <span id='sendingemailstatus'>  </span>
+                  <button type="button" 
+                          class="dsibutton tx-11 tx-uppercase pd-y-12 pd-x-25 tx-mont tx-medium" 
+                          id='askpermissionbtn'
+                          data-owner='<?php echo $overallqtdets[0]->inputby; ?>'
+                          data-reqs ='<?php echo Auth::id(); ?>'>Ask Permission</button>
+                </div>
+              </div>
+            </div><!-- modal-dialog -->
+        </div><!-- modal -->
+<?php } ?>
+
+<?php if ($allowed) { ?>
+        <div id="insertotheritem" class="modal fade">
+            <div class="modal-dialog modal-dialog-vertical-center" role="document">
+              <div class="modal-content bd-0 tx-14">
+                <div class="modal-header pd-y-20 pd-x-25">
+                  <h6 class="tx-14 mg-b-0 tx-uppercase tx-inverse tx-bold"> Insert </h6>
+                  <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                  </button>
+                </div>
+                <div class="modal-body pd-10">
+                    <span id='insertotheritemspan'> </span>
+                </div>
+                <div class="modal-footer">
+                  <span id='sendingemailstatus'>  </span>
+                  <button type="button" 
+                          class="dsibutton tx-11 tx-uppercase pd-y-12 pd-x-25 tx-mont tx-medium" 
+                          id='savethisotheritem'>Insert item</button>
+                </div>
+              </div>
+            </div>
+        </div>
+<?php } ?>
+
+    <!-- viewerswithaccess -->
+        <div id="viewerswithaccess" class="modal fade">
+            <div class="modal-dialog modal-dialog-vertical-center" role="document">
+              <div class="modal-content bd-0 tx-14">
+                <div class="modal-header pd-y-20 pd-x-25">
+                  <h6 class="tx-14 mg-b-0 tx-uppercase tx-inverse tx-bold">List of Users with access</h6>
+                  <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                  </button>
+                </div>
+                <div class="modal-body pd-10">
+                    <?php if ($haveaccess != false) { ?>    
+                        <ul class='usersaccessul'>
+                        <?php
+                            foreach($haveaccess as $h) {
+                                echo "<li>";
+                                    echo "<p class='mg-0'> ".$h->name. "</p>";
+                                    if ($isowner) {
+                                        echo "<small data-auid='{$h->auid}' class='removespan'> remove </small>";
+                                    }
+                                echo "</li>";
+                            }    
+                        ?>
+                        </ul>
+                    <?php } else { ?>
+                        <p> No users have access to this quotation. </p>
+                    <?php } ?>
+                </div>
+                <div class="modal-footer">
+                  <!-- <button type="button" class="dsibutton tx-11 tx-uppercase pd-y-12 pd-x-25 tx-mont tx-medium" id='savenewrecord'>Remove</button> -->
+                </div>
+              </div>
+            </div>
+        </div>
+
 
         <div id="basicinfodiv" class="modal fade">
             <div class="modal-dialog modal-dialog-vertical-center" role="document">
@@ -440,8 +409,8 @@
             </div>
         </div>
 
-        <div id="insertitem" class="modal fade">
-            <div class="modal-dialog modal-dialog-vertical-center" id='itemdivbox' role="document">
+        <div id="insertitem" class="modal fade maxwidth" data-backdrop="static" data-keyboard="false">
+            <div class="modal-dialog modal-dialog-vertical-center" role="document">
               <div class="modal-content bd-0 tx-14">
                 <div class="modal-header pd-y-20 pd-x-25">
                   <h6 class="tx-14 mg-b-0 tx-uppercase tx-inverse tx-bold">Insert Item<span id='windowselected'> </span> </h6>
@@ -449,7 +418,7 @@
                     <span aria-hidden="true">&times;</span>
                   </button>
                 </div>
-                <div class="modal-body">
+                <div class="modal-body pd-t-0 pd-b-0" style='background:#fff;'>
                     <div class='dsibox pd-b-10' id='categoryselect'>
                         <table class='fullwidth'>
                             <tbody>
@@ -637,14 +606,174 @@
             </div>
         </div>
 
-        <div id="changevalidityperiod" class="modal fade">
-            <div class="modal-dialog modal-dialog-vertical-center" id='itemdivbox' role="document">
+        
+
+        <div id="subtotaldiv" class="modal fade">
+            <div class="modal-dialog modal-dialog-vertical-center" role="document">
               <div class="modal-content bd-0 tx-14">
                 <div class="modal-header pd-y-20 pd-x-25">
-                  <h6 class="tx-14 mg-b-0 tx-uppercase tx-inverse tx-bold"> Change Validity Period</h6>
+                  <h6 class="tx-14 mg-b-0 tx-uppercase tx-inverse tx-bold">Sub total</h6>
                   <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                   </button>
+                </div>
+                <div class="modal-body pd-25">
+                    <table class='dsitable'>
+                        <tr>
+                            <td> Description </td>
+                            <td> <input type='text' class='dsitxtbox' id='subtotaldesc'/> </td>
+                        </tr>
+                        <tr>
+                            <td> Quantity </td>
+                            <td> <input type='text' class='dsitxtbox' id='subtotalqty'/> </td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="modal-footer">
+                  <button type="button" class="dsibutton tx-11 tx-uppercase pd-y-12 pd-x-25 tx-mont tx-medium" id='insertsubtotal'>Insert Subtotal</button>
+                </div>
+              </div>
+            </div><!-- modal-dialog -->
+        </div><!-- modal -->
+        
+        <div id="viewitemdetails" class="modal fade">
+            <div class="modal-dialog modal-dialog-vertical-center" role="document">
+              <div class="modal-content bd-0 tx-14">
+                <div class="modal-header pd-y-20 pd-x-25">
+                  <h6 class="tx-14 mg-b-0 tx-uppercase tx-inverse tx-bold">Item Details</h6>
+                  <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                  </button>
+                </div>
+                <div class="modal-body removepmarg uniformp" id='showitemdetailshere'>
+                    
+                </div>
+              </div>
+            </div>
+        </div>
+
+    
+                            <div id="companyprofile" class="modal fade">
+                                <div class="modal-dialog modal-dialog-vertical-center" role="document">
+                                    <div class="modal-content bd-0 tx-14">
+                                        <!-- <div class="modal-header pd-y-20 pd-x-25">
+                                            <h6 class="tx-14 mg-b-0 tx-uppercase tx-inverse tx-bold"></h6>
+                                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                <span aria-hidden="true">&times;</span>
+                                            </button>
+                                        </div> -->
+                                        <div class="modal-body pd-t-10">
+                                            <div class='pd-l-0' id='profilediv'>
+                                                <div style="background: #fff;border: 1px solid #dfdede;border-radius: 10px 10px 0px 0px;" class="pd-t-10 pd-r-0 pd-l-10">
+                                                    <div class='row dsibox pd-b-10 pd-t-10'>
+                                                        <div class='col-md-4'>
+                                                            <div class='companyprof'>
+                                                                <p> <?php echo strtoupper($ints); ?> </p>
+                                                            </div>
+                                                        </div>
+                                                        <div class='col-md-8 pd-l-0 removepmarg'>
+                                                            <strong class='dsitxt'>
+                                                                <p>
+                                                                <?php 
+                                                                    if ($data != null) {
+                                                                        if (strlen($data[0]->companyname)==0) {
+                                                                            echo "N/A";
+                                                                        } else {
+                                                                            echo "<span id = 'savetonewclient' > ".$data[0]->companyname ."  </span>";
+                                                                        }
+                                                                    }
+                                                                ?>
+                                                                </p>
+                                                            </strong>
+                                                            <small style="font-size: 13px;"> 
+                                                                <?php 
+                                                                    if (count($empdata) > 0) {
+                                                                        echo $empdata[0]->theinterest;
+                                                                    } else {
+                                                                        echo "no interest specified";
+                                                                    }
+                                                                ?>
+                                                            </small> <br/> <br/>
+                                                            <a class='fullwidth' style="color: #a4a3a3;font-size: 13px;text-decoration: underline;" target='_blank' href="<?php echo route('customer')."/".$data[0]->id; ?>"> Go to Profile </a>
+                                                        </div>
+                                                    </div>
+                                                   
+                                                        <table class='removepmarg dsiflattable mg-t-10'>
+                                                            <tr>
+                                                                <th colspan='2' style='padding-bottom: 10px;'> Quotation Details </th>
+                                                            </tr>
+                                                            <tr>
+                                                                <td> <p> Status: </p>
+                                                                    <strong class='dsitxt'>
+                                                                        <?php
+                                                                            if (count($overallqtdets) > 0) {
+                                                                                if ($overallqtdets[0]->status == 1) {
+                                                                                    echo "Quotation";
+                                                                                } else if ($overallqtdets[0]->status == 0) {
+                                                                                    echo "Subject for Approval";
+                                                                                } else if ($overallqtdets[0]->status == 3) {
+                                                                                    echo "Ordered";
+                                                                                } else if ($overallqtdets[0]->status == 2) {
+                                                                                    echo "APPROVED";
+                                                                                } else if ($overallqtdets[0]->status == 6) {
+                                                                                    echo "Cancelled"; 
+                                                                                } else if ($overallqtdets[0]->status == 7) {
+                                                                                    echo "expired"; 
+                                                                                } else if ($overallqtdets[0]->status == 8) {
+                                                                                    echo "Processed: P.O."; 
+                                                                                }
+                                                                            }
+                                                                        ?>
+                                                                    </strong> 
+                                                                </td>
+                                                            </tr>
+
+                                                            <tr>
+                                                                <td> <p> Valid until: </p>
+                                                                    <button class='btn btn-default' 
+                                                                            id='changevalidity'
+                                                                            data-toggle='modal'
+                                                                            data-target='#changevalidityperiod'> 
+                                                                        <strong class='dsitxt'> <?php echo date("M. d, Y", strtotime($overallqtdets[0]->quotevalidity)); ?> </strong> 
+                                                                    </button>
+
+                                                                </td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td> <p> Date: </p>
+                                                                    <strong class='dsitxt'> 
+                                                                        <?php
+                                                                            echo date("M. d, Y", strtotime($quotedets[0]->created_at));
+                                                                        ?>
+                                                                    </strong> 
+                                                                </td>
+                                                            </tr>
+                                                        
+                                                            <tr>
+                                                                <td> <p> Owner: </p>
+                                                                    <strong class='dsitxt'>
+                                                                        <?php
+                                                                            echo $quotedets[0]->name;
+                                                                        ?>
+                                                                    </strong> 
+                                                                </td>
+                                                            </tr>
+                                                        
+                                                        </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div><!-- modal-dialog -->
+                            </div><!-- modal -->
+        
+        <div id="changevalidityperiod" class="modal fade">
+            <div class="modal-dialog modal-dialog-vertical-center" id='itemdivbox' role="document" style="box-shadow: 0px 0px 25px #333;">
+              <div class="modal-content bd-0 tx-14">
+                <div class="modal-header pd-y-20 pd-x-25">
+                  <h6 class="tx-14 mg-b-0 tx-uppercase tx-inverse tx-bold"> Change Validity Period</h6>
+                  <!-- <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                  </button> -->
                 </div>
                 <div class="modal-body">
                     <div class='dsibox pd-b-20 pd-t-20'>

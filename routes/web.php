@@ -8,6 +8,7 @@ use App\Http\Controllers\QuotationsController;
 use App\Http\Controllers\Processhandler;
 use App\Http\Controllers\Offsitecontrol;
 use App\Http\Controllers\TheOrdersController;
+use App\Http\Controllers\ProductlineController;
 
 /*
 |--------------------------------------------------------------------------
@@ -24,9 +25,11 @@ Route::get('/', function () {
     return redirect("/dashboard");
 });
 
+Route::get("/reroute/{id?}/{action?}/{routeto?}",[Processhandler::class,"reroute"])->name("reroute");
+
 Route::get("/approve/{idfk?}/{code?}",[Offsitecontrol::class,"approvenow"])->middleware(['auth', 'verified'])->name("approvenow");
 
-Route::get("/quotation/{quoteid?}/{code?}",[Offsitecontrol::class,"quotation"])->name("quotation");
+Route::get("/quotation/{quoteid?}/{code?}/{preview?}",[Offsitecontrol::class,"quotation"])->name("quotation");
 Route::post("/quotation/{quoteid?}/{code?}",[Offsitecontrol::class,"quotation"])->name("quotation");
 
 Route::get("/optoutnotification/{grpidpk?}/{action?}",[Offsitecontrol::class,"optoutnotification"])->name("optoutnotification")->middleware(['auth', 'verified'])->name('optoutnotification');
@@ -34,6 +37,33 @@ Route::get("/optoutnotification/{grpidpk?}/{action?}",[Offsitecontrol::class,"op
 Route::get('/dashboard', function () {
     return view('dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
+
+Route::get("/productline/{grpcode?}/{action?}",[ProductlineController::class,"productline"])->middleware(['auth', 'verified'])->name("productline");
+Route::post("/productline/{grpcode?}/{action?}",[ProductlineController::class,"productline"])->middleware(['auth', 'verified'])->name("productline");
+
+Route::get("/test", function(){
+    date_default_timezone_set("asia/manila");
+    echo date_default_timezone_get();
+
+    $datetoday  = date("Y-m-d H:i:s A");
+
+    $createdate = "2023-02-17 05:56:28";
+    $compare    = "+1 hour";
+
+    $datetocomp = date('Y-m-d H:i:s A', strtotime($createdate . ' '.$compare.' '));
+    
+    // echo date('Y-m-d H:i:s', strtotime($createdate . ' '.$compare.' ')); echo " :: "; echo date("Y-m-d h:i:s");
+    echo "<br/>";
+      echo $datetocomp; echo " = "; echo $datetoday; echo "<br/>";
+
+    if ($datetoday == $datetocomp) {
+        echo "equal";
+    } else if ($datetocomp > $datetoday) {
+        echo "valid";
+    } else if ($datetocomp < $datetoday) {
+        echo "expired";
+    }
+});
 
 Route::get("/customer/{id?}/{notif?}/{tbl?}/{tblid?}", [CustomerstblController::class,"customersview"])->middleware(['auth', 'verified'])->name('customer');
 Route::get("/phonebook", [CustomerstblController::class,"contactswindow"])->middleware(['auth', 'verified'])->name('phonebook');
@@ -71,7 +101,7 @@ Route::get("/displayitemview",[CustomerstblController::class,"displayitemview"])
 
 // quotation routes
 Route::middleware("auth")->group(function(){
-    Route::get("/quotes/{id?}/{quoteid?}",[QuotationsController::class,"quotes"])->name('quotes');
+    Route::get("/quotes/{id?}/{quoteid?}/{approvalcode?}/{reqsid?}/{aprvcode?}",[QuotationsController::class,"quotes"])->name('quotes');
     Route::get("/taxable",[QuotationsController::class,"taxable"])->name('taxable');
     Route::get("/nontaxable",[QuotationsController::class,"nontaxable"])->name('nontaxable');
     Route::get("/additem",[QuotationsController::class,"additem"])->name('additem');
@@ -85,6 +115,11 @@ Route::middleware("auth")->group(function(){
     Route::get("/uploaditems/{cats?}",[QuotationsController::class,"uploaditems"])->middleware(['auth', 'verified'])->name('uploaditems');
     Route::post("/uploaditems/{cats?}",[QuotationsController::class,"fileupload"])->middleware(['auth', 'verified'])->name('fileupload');
     Route::post("/changevalidity",[QuotationsController::class,"changevalidity"])->name('changevalidity');
+    Route::post("/loadmarkups",[QuotationsController::class,"loadmarkups"])->name('loadmarkups');
+    Route::post("/viewitemdetails",[QuotationsController::class,"viewitemdetails"])->name('viewitemdetails');
+    Route::post("/checkitemneedsapproval",[QuotationsController::class,"checkitemneedsapproval"])->name('checkitemneedsapproval');
+    Route::get("/insertotheritems",[QuotationsController::class,"insertotheritems"])->name('insertotheritems');
+    Route::get("/loadingcomments",[QuotationsController::class,"loadingcomments"])->name('loadingcomments');
 });
 // end of quotes applets
 
@@ -111,6 +146,7 @@ Route::middleware("auth")->group(function(){
     Route::post("/sendtocontact",[Processhandler::class,"sendtocontact"])->name('sendtocontact');
     Route::post("/updatefields",[Processhandler::class,"updatefields"])->name('updatefields');
     Route::post("/sendnotification",[Processhandler::class,"sendnotification"])->name('sendnotification');
+    Route::post("/updatemultipleitems",[Processhandler::class,"updatemultipleitems"])->name('updatemultipleitems');
     // Route::post("/saveaddoninfo",[Processhandler::class,"saveaddoninfo"])->name("saveaddoninfo");
 });
 // end utilities

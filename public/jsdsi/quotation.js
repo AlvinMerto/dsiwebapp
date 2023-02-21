@@ -1,7 +1,9 @@
 // call after body onload
 window.onload = function(){
-    a.displaythequoteitems( $(document).find("#quoteidfk").val() ) 
-    a.computatethetotal( $(document).find("#quoteidfk").val() );
+    if ( undefined !== $(document).find("#quoteidfk").val() ) {
+        a.displaythequoteitems( $(document).find("#quoteidfk").val() ) 
+        a.computatethetotal( $(document).find("#quoteidfk").val() );
+    }
 
     let ht = $(document).find("#motherdiv").height();
     $(document).find("#contextmenu").css("min-height",ht+"px");
@@ -20,6 +22,8 @@ let qtid = [];
         let quoteidfk = $(document).find("#quoteidfk").val();
         let itemcost  = $(document).find("#costtxt").val();
 
+        let interid   = $(document).find("#interid").val();
+
         let basicinfo                   = new Object();
             basicinfo.quoteidfk         = quoteidfk;
             basicinfo.tblorder          = tblorder+1;
@@ -30,47 +34,87 @@ let qtid = [];
             basicinfo.supppart          = $(document).find("#supppart").val();
             basicinfo.manuname          = $(document).find("#mfgname").val();
             basicinfo.manupart          = $(document).find("#mfgpart").val();
-            basicinfo.markup            = $(document).find("#markupselect").val();
+            basicinfo.markup            = "markup"; // $(document).find("#markupselect").val();
 
             if ($(document).find("#percentageselect").val() == "customper") {
                 basicinfo.markupvalue       = $(document).find("#custpertxt").val();
             } else {
                 basicinfo.markupvalue       = $(document).find("#percentageselect").val();
             }
+
+
+            // ## shipping 
+            if ( $('#addshippingbtn').is(":checked") ) {
+                basicinfo.withshipping       = "1";
+                basicinfo.shippingcost       = $(document).find("#shipcost").val();
+                basicinfo.shippingmarkup     = $(document).find("#shipmarkup").val();
+                //basicinfo.shippingfinalprice = $(document).find("#shipvalue").val();
+            } else {
+                delete basicinfo.withshipping;
+                delete basicinfo.shippingcost;
+                delete basicinfo.shippingmarkup;
+                //delete basicinfo.shippingfinalprice;
+            }
+            // ## end shipping
+
+            // ## expiry date 
+            if ( $("#addexpirybtn").is(":checked") ) {
+                basicinfo.withexpiry = "1";
+                basicinfo.expnumber  = $(document).find("#expirynumber").val();
+                basicinfo.expunit    = $(document).find("#expiryunit").val();
+                basicinfo.expnote    = $(document).find("#expirynote").val(); 
+            } else {
+                delete basicinfo.withexpiry;
+                delete basicinfo.expnumber;
+                delete basicinfo.expunit;
+                delete basicinfo.expnote;
+            }
+            // ## end expiry
             
-            let qty      = $(document).find("#qtytxt").val();
-            let price    = $(document).find("#sellpricetxt").val();
-            // let extprice = parseInt(qty)*parseFloat(price);
+            basicinfo.qty               = "1";
 
-            basicinfo.qty               = qty;
-            basicinfo.price             = price;
-
-            basicinfo.extended          = extendedprice;
-            basicinfo.status            = "1";
-
-            let thefinalitemcost        = (parseFloat(itemcost)*qty);
-            basicinfo.profit            = parseFloat(extendedprice) - parseFloat(thefinalitemcost);
-
-            // if ($("input[name='istax']:checked")) {
             if ( $('#istax').is(":checked") ) {
                 basicinfo.taxable           = "1";
             } else {
                 basicinfo.taxable           = "0";
             }
-            
+
+            let vals    = $(document).find("#productlineselect").val();
+            let valtext = "";
+
+            basicinfo.productlineid = vals.split("_")[2];
+
+            if (vals.split("_")[1] == "0") {
+                valtext = $(document).find("#productlineselect :selected").text();
+            } else if (vals.split("_")[1] == "1") {
+                valtext = $(document).find("#customitemtypetxt").val();
+            }
+
+            if (valtext.length == 0) {
+                alert("Please choose the product line");
+                return;
+            }
+
+            basicinfo.productline   = valtext;
+
+            if (itemcost.length == 0) {
+                alert("Item cost cannot be empty"); return;
+            }
+
             // console.log(basicinfo); return;
             a.savetodatabase(basicinfo, "quoteitemstbls", false, false, function(data){
                 $(document).find("#insertitem").hide();
                 $(document).find(".modal-backdrop").hide();
                 $('body').removeClass("modal-open");
 
-                a.displaytotable(basicinfo, data);
+                a.displaytotable(interid, data);
                 
                 let theitems           = new Object();
                     theitems.theitemid = data;
 
                 a.updateentries(theitems, "itemreferencetbls", itemgrpid, "itemgrpid");
                 a.computatethetotal(quoteidfk);
+                a.checkformarkupstatus(data);
             }, false, false);
 
     });
@@ -171,6 +215,8 @@ $(document).on("input change", "#costtxt", function(){
         let idname  = $(this).data("idname");
         let dis     = $(this);
 
+        let parenttr = dis.parent();
+
         $(this).html("");
         
 
@@ -219,7 +265,20 @@ $(document).on("input change", "#costtxt", function(){
                             $(document).find("#itemcost_"+idname).html(data['itemcost']);
                             $(document).find("#markup_"+idname).html(data['markupvalue']);
 
-                            a.computatethetotal(quoteidfk);   
+                            // shipping
+                            $(document).find("#shippingcost_"+idname).html(data['shippingcost']);
+                            $(document).find("#shippingmarkup_"+idname).html(data['shippingmarkup']);
+                            $(document).find("#shippingfinalprice_"+idname).html(data['shippingfinalprice']);
+
+                            a.computatethetotal(quoteidfk);
+                            a.checkitemneedsapproval(quoteidfk);
+                            a.checkformarkupstatus(dataid, function(data){
+                                if (data == 0 || data == "0") {
+                                    parenttr.removeClass("needsapproval");
+                                } else {
+                                    parenttr.addClass("needsapproval");
+                                }
+                            });
                         });
                     }
             //    }
@@ -267,6 +326,7 @@ $(document).on("click","#removebtn", function(){
     }
 
     a.removequoteitems(qtid, $(document).find("#quoteidfk").val());
+    
 });
 // end remove
 
@@ -280,6 +340,8 @@ $(document).on("click",".qtcheckbox", function(){
         let indx  = qtid.indexOf( $(this).val() );
         qtid.splice(indx,1);
     }
+
+    // console.log(qtid);
 });
 // end 
 
@@ -302,7 +364,7 @@ $(document).on("click","#askforapproval", function() {
 
     $("<p style='margin-top: 5px;margin-bottom: 0px;margin-left: 15px;'> sending message... please wait </p>").appendTo("#messagestatus");
 
-    a.sendemail(subject, message, link , quoteidfk, "quoteid", "quotation_corners", function(){
+    a.sendemail(subject, message, link , quoteidfk, "quoteidfk", "quoteitemstbls", function(){
         alert("Message sent");
         window.location.reload();
         // $("#messagestatus").html("<p style='margin-top: 5px;margin-bottom: 0px;margin-left: 15px;'> Message is sent </p>");
@@ -327,12 +389,17 @@ $(document).on("click","#savequotation", function(){
 
 // send quotation 
     $(document).on("click","#sendquotationbtn", function(){
-        let na = $(document).find("#na").val();
 
-        if (na == 1 || na == "1") {
-            alert("Cannot proceed with the sending. This document needs to be approved first.");
-            return;
+        if ( needsapproval ) {
+           alert("Cannot proceed. You need to ask approval first.");
+           return;
         }
+
+        //let na = $(document).find("#na").val();
+        // if (na == 1 || na == "1") {
+        //     alert("Cannot proceed with the sending. This document needs to be approved first.");
+        //     return;
+        // }
 
         //window.location.href;
 
@@ -402,10 +469,10 @@ $(document).on("click","#savenewreference", function(){
     a.savetodatabase(theobject, "itemreferencetbls", false, false, function(data){
         // tabgroupdiv
         // criteriadivdisplay
-        $("<p class='additemtab' data-tabname='"+idname+"' id='tab"+idname+"'>"+theobject.criteria+"</p>").prependTo("#tabgroupdiv");
+        $("<p class='additemtab' style='margin-bottom: 20px;' data-tabname='"+idname+"' id='tab"+idname+"'>"+theobject.criteria+"</p>").prependTo("#tabgroupdiv");
         $("<div id = '"+idname+"' class='additemtab_div pd-t-10 pd-b-10 pd-b-10 pd-r-15 pd-l-15'>"+
-            "<p> Reference: <input type='text' class='dsitxtbox thetextinput mg-b-5' data-fld='reference' data-idfld='itemrefid' data-id='"+data+"' data-tbl='itemreferencetbls' value='"+theobject.reference+"' style='width: auto;'/> <small class='peritemedit'> edit </small> </p>"+
-            "<p> Value: <input type='text' class='dsitxtbox thetextinput mg-b-5' data-fld='thevalue' data-idfld='itemrefid' data-id='"+data+"' data-tbl='itemreferencetbls' value='"+theobject.thevalue+"' style='width: auto;'/> <small class='peritemedit'> edit </small> </p>"+
+            "<p> Reference: <input type='text' class='pd-15 dsitxtbox thetextinput mg-b-0 pd-15' style='padding:6px 13px;' data-fld='reference' data-idfld='itemrefid' data-id='"+data+"' data-tbl='itemreferencetbls' value='"+theobject.reference+"' style='width: auto;'/> <small class='peritemedit'> edit </small> </p>"+
+            "<p> Value: <input type='text' class='pd-15 dsitxtbox thetextinput mg-b-0' style='padding:6px 13px;' data-fld='thevalue' data-idfld='itemrefid' data-id='"+data+"' data-tbl='itemreferencetbls' value='"+theobject.thevalue+"' style='width: auto;'/> <small class='peritemedit'> edit </small> </p>"+
             "<button id='deletethisdiv' data-tblid='"+data+"' data-domid='"+idname+"' class='btn btn-danger btn-sm mg-t-5'> Delete </button>"+
          "</div>").appendTo("#criteriadivdisplay");
 
@@ -448,3 +515,401 @@ $(document).on("click","#savenewreference", function(){
         // validitydate 
     });
 // end validity period
+
+// insert subtotal 
+    $(document).on("click","#insertsubtotal", function(){
+        let subtotaldesc = $(document).find("#subtotaldesc").val();
+        let subtotalqty  = $(document).find("#subtotalqty").val();
+
+        let theobject              = new Object();
+            theobject.subtotalname = subtotaldesc;
+            theobject.subtotalqty  = subtotalqty;
+
+        a.savetodatabase(theobject, "subtotaltbls", false, false, function(data){
+            let a = new Dsifronprocs();
+
+            a.updatemultipleitems(data, "quoteitemstbls", qtid ,"subtotalidfk" , "quoteidfk", function(){
+                window.location.reload();
+            });
+        });
+    });
+// ens subtotal
+
+// add shipping button 
+    $(document).on("click","#addshippingbtn", function(){
+        let state = null;
+
+        if ( $('#addshippingbtn').is(":checked") ) {
+            $(document).find("#shippingcosttable").removeClass("hidethis");
+        } else {
+            $(document).find("#shippingcosttable").addClass("hidethis");
+        }
+    })
+// end
+
+// add expiry button
+    $(document).on("click","#addexpirybtn", function(){
+        let state = null;
+
+        if ( $('#addexpirybtn').is(":checked") ) {
+            $(document).find("#expirytable").removeClass("hidethis");
+        } else {
+            $(document).find("#expirytable").addClass("hidethis");
+        }
+    });
+// end 
+
+// product line select 
+    $(document).on("change","#productlineselect", function(){
+        let vals = $(this).val();
+        
+        let id    = vals.split("_")[0];
+        let isdef = vals.split("_")[1];
+        let grpid = vals.split("_")[2];
+
+        if (isdef == 1) {
+            $(document).find("#customitemtypetxt").show();
+        } else {
+            $(document).find("#customitemtypetxt").hide();
+        }
+
+        if (undefined == grpid) {
+            $(document).find("#percentageselspan").html("select from the item type...");
+        } else {
+            a.loadmarkups(grpid, function(data){
+                $(document).find("#percentageselspan").html(data);
+            });
+        }
+    });
+// end 
+
+// call window 
+    // callawindow(uniqueid, windowtocall, displayin, somefunction = false)
+    $(document).on("click","#itemdetails", function(){
+        if (qtid.length == 0) {
+           $(document).find("#showitemdetailshere").html("Please select an item");
+           return;
+        }
+
+        a.callawindow(qtid[0], "viewitemdetails", function(data){
+            $(document).find("#showitemdetailshere").html(data);
+        });
+    })
+// end call window
+
+// open window 
+    $(document).on("click",".openwindow", function(){
+        
+        if ( $(this).siblings(".referencevalues").hasClass("hidethis") ) {
+            $(this).siblings(".referencevalues").removeClass("hidethis");
+            $(this).siblings(".referencevalues").show();
+        } else {
+            $(this).siblings(".referencevalues").addClass("hidethis");
+            $(this).siblings(".referencevalues").hide();
+        }
+    });
+// end opening window
+
+// expirytxtbox 
+    $(document).on("blur",".expirytxtbox", function(){
+        let table = $(this).data("tbl");
+        let idfld = $(this).data("idfld");
+        let id    = $(this).data("id");
+        let field = $(this).data("fld");
+        let value = $(this).val();
+
+        if (value.length > 0) {
+            a.saveperitem(table, id, idfld, field, value, function(){
+                let a      = new Dsifronprocs();
+
+                a.saveperitem(table, id, idfld, "withexpiry", "1" , function(){
+                    $(document).find("#removeexpiry").removeClass("hidethis");
+                }, false);
+            }, false);
+        }
+    });
+// end 
+
+// frequency select 
+    $(document).on("change","#freqselect", function(){
+        let val = $(this).val();
+
+        if (val != "def") {
+            let table   = $(this).data("tbl");
+            let idfld   = $(this).data("idfld");
+            let id      = $(this).data("id");
+            let field   = $(this).data("fld");
+
+            let numberbox = $(document).find("#numbertxtbox").val();
+
+            if ( numberbox.length == 0 ) {
+                alert("Cannot proceed with empty number"); return;
+            }
+
+            a.saveperitem(table, id, idfld, field, val, function(){
+
+                let a = new Dsifronprocs();
+                a.saveperitem(table, id, idfld, "withexpiry", "1", function(){
+                    $(document).find("#removeexpiry").removeClass("hidethis");
+                }, false);
+            }, false);
+        }
+    }); 
+// end 
+
+// remove expiry
+
+$(document).on("click","#removeexpiry", function(){
+    var conf = confirm("Are you sure you want to remove expiry?");
+
+    if (!conf) { return; }
+
+    let table = $(this).data("tbl");
+    let id    = $(this).data("id");
+    let idfld = $(this).data("idfld");
+
+    a.saveperitem(table, id, idfld, "withexpiry", null, function(){
+        let a = new Dsifronprocs();
+        
+        a.saveperitem(table, id, idfld, "expnumber", null , function(){
+            let a = new Dsifronprocs();
+        
+            a.saveperitem(table, id, idfld, "expunit", null, function(){
+                let a = new Dsifronprocs();
+        
+                a.saveperitem(table, id, idfld, "expnote", null, function(){
+                    window.location.reload();
+                }, false);
+            }, false);       
+        }, false);
+    }, false);
+});
+
+// save this new information 
+    $(document).on("click","#savethisnewinfo", function(){
+
+        if (qtid.length > 1) {
+            alert("Too many item are selected");
+            return;
+        }
+
+        let quoteidfk = $(document).find("#quoteidfk").val();
+        let itemgrpid = $(this).data("itemgrpid");
+
+        let theobject = new Object();
+            theobject.quoteidfk = quoteidfk;
+            theobject.criteria  = $(document).find("#categorytxt").val();
+            theobject.reference = $(document).find("#referencetxt").val();
+            theobject.thevalue  = $(document).find("#valuetxt").val();
+            theobject.theitemid = qtid[0];
+            theobject.itemgrpid = itemgrpid;
+            theobject.status    = "1";
+
+        a.savetodatabase(theobject, "itemreferencetbls", false, false, function(data){
+            // let theitems           = new Object();
+            // theitems.theitemid     = data;
+
+            alert("New information is saved");
+            
+            $(document).find("#categorytxt").val("");
+            $(document).find("#referencetxt").val("");
+            $(document).find("#valuetxt").val("");
+
+            $(document).find("#newinformationdiv").addClass("hidethis");
+
+            // a.updateentries(theitems, "itemreferencetbls", itemgrpid, "itemgrpid" , function(){
+               
+            // });            
+        });
+    })
+// end 
+
+// add additional info
+    $(document).on("click","#addadditionalinfo", function(){
+        if ( $(document).find("#newinformationdiv").hasClass("hidethis") ) {
+            $(document).find("#newinformationdiv").removeClass("hidethis");
+        } else {
+            $(document).find("#newinformationdiv").addClass("hidethis");
+        }
+    });    
+// end 
+
+// ask permission button
+    $(document).on("click","#askpermissionbtn", function(){
+        let subject = "Permission to edit your quotation.";
+        let message = $(document).find("#reasontxt").val();
+        let idfld   = "idfk";
+        let id      = $(document).find("#quoteidfk").val();
+        let tbl     = "allowed_users";
+        let emailto = $(this).data('owner');
+        // let link    = url+"/allowedit/"+tbl+"/"+id;
+        let link    = window.location.href;
+        
+        let thedata             = new Object();
+            thedata.table       = "quotation_corners";
+            thedata.idfk        = id;
+            thedata.idfld       = "quoteid";
+            thedata.alloweduser = $(this).data("reqs");
+            thedata.status      = "0";
+
+        $(document).find("#sendingemailstatus").html("Saving item...");
+        a.savetodatabase(thedata, "allowed_users", false, false, function(){
+            $(document).find("#sendingemailstatus").html("sending email..");
+
+            let a = new Dsifronprocs();
+
+                a.sendemail(subject, message, link , id , idfld , tbl , function(data){
+                    alert("Your email is sent.");
+                }, emailto);
+        });
+            
+    });
+// end 
+
+// remove user access 
+    $(document).on("click",".removespan", function(){
+        let tblid = $(this).data("auid");
+
+        let dis   = $(this).parent();
+
+        a.removeitem("allowed_users", tblid, "auid", function(data){
+            if (data) {
+                alert("User have successfully been removed from editing this quotation.");
+                dis.remove();
+            }
+        }, true);
+    });
+// end user access 
+
+
+// save this other item
+$(document).on("click","#savethisotheritem", function(){
+    let itemgrpid = $(document).find("#itemgrpid").val();
+
+    // custpertxt
+    let tblorder  = $(document).find("#tbodyrow").children().length;
+    let quoteidfk = $(document).find("#quoteidfk").val();
+    let itemcost  = $(document).find("#costtxt").val();
+
+    let interid   = $(document).find("#interid").val();
+
+    let basicinfo                   = new Object();
+        basicinfo.quoteidfk         = quoteidfk;
+        basicinfo.tblorder          = tblorder+1;
+        basicinfo.itemtype          = $(document).find("#thetypeofitem").val();
+        basicinfo.itemdesc          = $(document).find("#itemdesc").val();
+        basicinfo.itemcost          = itemcost;
+        basicinfo.suppname          = null;
+        basicinfo.supppart          = null;
+        basicinfo.manuname          = null;
+        basicinfo.manupart          = null;
+        basicinfo.markup            = "markup"; // $(document).find("#markupselect").val();
+
+        if ($(document).find("#percentageselect").val() == "customper") {
+            basicinfo.markupvalue       = $(document).find("#custpertxt").val();
+        } else {
+            basicinfo.markupvalue       = $(document).find("#percentageselect").val();
+        }
+
+
+        // ## shipping 
+            // if (basicinfo.itemtype == "Freight") {
+            //     basicinfo.itemcost           = "0";
+            //     basicinfo.markupvalue        = "0";
+
+            //     basicinfo.withshipping       = "1";
+            //     basicinfo.shippingcost       = itemcost;
+            //     basicinfo.shippingmarkup     = basicinfo.markupvalue;
+            //     basicinfo.qty                = "1";
+            // } else {
+            //     delete basicinfo.withshipping;
+            //     delete basicinfo.shippingcost;
+            //     delete basicinfo.shippingmarkup;
+
+            //     basicinfo.itemcost           = itemcost;
+            //     basicinfo.qty               = $(document).find("#qtytxt").val();
+
+            //     if ($(document).find("#percentageselect").val() == "customper") {
+            //         basicinfo.markupvalue       = $(document).find("#custpertxt").val();
+            //     } else {
+            //         basicinfo.markupvalue       = $(document).find("#percentageselect").val();
+            //     }
+                
+            // }
+        // ## end shipping
+
+        // ## expiry date 
+        // if ( $("#addexpirybtn").is(":checked") ) {
+        //     basicinfo.withexpiry = "1";
+        //     basicinfo.expnumber  = $(document).find("#expirynumber").val();
+        //     basicinfo.expunit    = $(document).find("#expiryunit").val();
+        //     basicinfo.expnote    = $(document).find("#expirynote").val(); 
+        // } else {
+        //     delete basicinfo.withexpiry;
+        //     delete basicinfo.expnumber;
+        //     delete basicinfo.expunit;
+        //     delete basicinfo.expnote;
+        // }
+        // ## end expiry
+        
+        
+        if ( $('#istax').is(":checked") ) {
+            basicinfo.taxable           = "1";
+        } else {
+            basicinfo.taxable           = "0";
+        }
+
+        let vals    = $(document).find("#productlineselect").val();
+        let valtext = "";
+
+        basicinfo.productlineid = vals.split("_")[2];
+
+        if (vals.split("_")[1] == "0") {
+            valtext = $(document).find("#productlineselect :selected").text();
+        } else if (vals.split("_")[1] == "1") {
+            valtext = $(document).find("#customitemtypetxt").val();
+        }
+
+        if (valtext.length == 0) {
+            alert("Please choose the product line");
+            return;
+        }
+
+        basicinfo.productline   = valtext;
+
+        if (itemcost.length == 0) {
+            alert("Item cost cannot be empty"); return;
+        }
+
+        // console.log(basicinfo); return;
+        a.savetodatabase(basicinfo, "quoteitemstbls", false, false, function(data){
+            $(document).find("#insertotheritem").hide();
+            $(document).find(".modal-backdrop").hide();
+            $('body').removeClass("modal-open");
+
+            a.displaytotable(interid, data);
+            
+            let theitems           = new Object();
+                theitems.theitemid = data;
+
+            a.updateentries(theitems, "itemreferencetbls", itemgrpid, "itemgrpid");
+            a.computatethetotal(quoteidfk);
+            a.checkformarkupstatus(data);
+        }, false, false);
+});
+// end 
+
+$(document).on("change", "#thetypeofitem", function(){
+    let itemselect = $(this).val();
+
+    if (itemselect == "Labor") {
+        $(document).find(".forlabor").show();
+        $(document).find(".forfreight").hide();
+    } else if (itemselect == "Freight") {
+        $(document).find(".forlabor").hide();
+        $(document).find(".forfreight").show();
+    } else {
+        $(document).find(".forlabor").hide();
+        $(document).find(".forfreight").hide();
+    }
+});

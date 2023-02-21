@@ -101,14 +101,13 @@ $(document).on("contextmenu", "#contextmenu" ,function(e) {
     $(document).find(".contextmenushow").remove();
     $("<div class='contextmenushow'>"+
         "<ul>"+
+            "<li id='itemdetails' data-toggle='modal' data-target='#viewitemdetails'> Item details </li>"+
             "<li data-toggle='modal' data-target='#insertitem' class='callitemssource' data-window='additem'> Add Custom Item </li>"+
             "<li data-toggle='modal' data-target='#insertitem' class='callitemssource' data-window='taxable'> Insert Item from Source </li>"+
             "<li> Subtotal </li>"+
             "<li> Labor </li>"+
             "<li> Freight </li>"+
-            "<li> Line </li>"+
-            "<li> Blank Row </li>"+
-            "<li> Comment </li>"+
+            "<li data-toggle='modal' data-target='#addcomment' class='callwindow' data-window='loadingcomments' data-insertospan='loadingcommentsspan'> Comment </li>"+
         "</ul>"+
      "</div>").css({
             top: e.clientY - $(".contextmenushow").height() / 2,
@@ -450,6 +449,8 @@ $(document).on("change","#activity", function(){
             basicinfo.groupidfk     = grpid = $(this).data("groupid");
             basicinfo.taskdatetime  = $(document).find("#datetimetxt").val();
             basicinfo.status        = "1";
+        
+        // console.log(basicinfo); return;
 
         let id   = $(this).data("custid");
         let link = url+"/optoutnotification/"+grpid+"/deactivate";
@@ -836,3 +837,90 @@ $(document).on("click","#createnewcategory", function(){
         $(document).find("#"+thewindow).show();
     });
 // end navigation ul
+
+// product line change
+    $(document).on("change","#productlinechange", function(){
+        let value   = $(this).val();
+        let valtext = $("#productlinechange :selected").text();
+
+        window.location.href = url+"/productline/"+value;
+    });
+// end
+
+// delete product line markup
+    $(document).on("click","#deletebtn", function(){
+        let id = $(this).data('id');
+
+        let dis = $(this);
+
+        a.removeitem("productlines", id, "productlineid", function(data){
+            dis.parent().remove();    
+        }, true);
+    });
+// end 
+
+// delete product line
+    $(document).on("click","#deleteproductline", function(){
+        let grpid = $(this).data('grpid');
+
+        a.removeitem("productlines", grpid, "thegrpid", function(data){
+            window.location.href = url+"/productline";
+        }, true);
+    });
+// end 
+
+// add new product line 
+    $(document).on("click","#addnewproductline", function(){
+        let iscustom   = null;
+
+        if ($("#iscustomval").is(":checked")) {
+            iscustom = "1";
+        } else {
+            iscustom = "0";
+        }
+
+        let basicinfo                  = new Object();
+            basicinfo.theproductline   = $(document).find("#productlinename").val();
+            basicinfo.minimummarkup    = $(document).find("#initialmarkup").val();
+            basicinfo.iscustom         = iscustom;
+            basicinfo.thegrpid         = $(document).find("#newgrpid").val();
+
+        a.savetodatabase(basicinfo, "productlines", false, false, function(data){
+            window.location.reload();
+        }, false, false);
+    })
+// end  
+
+// ask customer id change
+    $(document).on("click","#askcustomnameid", function(){
+        let grpid       = $(this).data("grpid");
+        let basicinfo   = new Object();
+
+        if ( $(this).is(":checked") ) {
+            basicinfo.iscustom    = "1";
+        } else {
+            basicinfo.iscustom    = "0";
+        }
+       
+        a.updateentries(basicinfo, "productlines", grpid , "thegrpid", function(data){
+            window.location.reload();
+        });
+    });
+// end 
+
+// expdivbox
+    $(document).on("click","#setexpirybtn", function(){
+        if ( $(document).find(".expdivbox").hasClass("hidethis") ) {
+            $(document).find(".expdivbox").removeClass("hidethis");
+        } else {
+            $(document).find(".expdivbox").addClass("hidethis");
+        }
+    })
+//
+
+// call window 
+    $(document).on("click",".callwindow", function(){
+        // insertotheritemspan
+        a.showdwindow_to_here($(this).data("window"), false, $(this).data("insertospan"));
+    });
+// end call window

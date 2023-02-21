@@ -23,7 +23,9 @@
                                     ?>
                                 </optgroup>
                             </select> &nbsp;
-                            <button class='dsibutton'> GENERATE&nbsp;P.O. </button>
+                            <?php if (isset($weeklyorder)) { ?>
+                                <button class='dsibutton'> GENERATE&nbsp;P.O. </button>
+                            <?php } ?>
                         </div>
                         <div class='flex'>
                             <?php if (!isset($weeklyorder)) { ?>

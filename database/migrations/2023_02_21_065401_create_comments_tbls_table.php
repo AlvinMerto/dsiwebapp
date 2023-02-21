@@ -13,10 +13,11 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('subtotaltbls', function (Blueprint $table) {
-            $table->increments("subtotalid");
-            $table->string("subtotalname");
-            $table->string("subtotalqty");
+        Schema::create('comments_tbls', function (Blueprint $table) {
+            $table->increments("comid");
+            $table->string("quoteidfk");
+            $table->string("quoteitemidfk");
+            $table->string("thecomment");
             $table->string("inputby");
             $table->string("status");
             $table->timestamps();
@@ -30,6 +31,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('subtotaltbls');
+        Schema::dropIfExists('comments_tbls');
     }
 };

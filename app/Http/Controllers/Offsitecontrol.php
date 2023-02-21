@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\emaillinkstbl;
 use App\Models\QuotationCorner;
 use App\Models\Sharewithtbn;
+use App\Models\User;
 
 use DB;
 use Auth;
@@ -20,7 +21,7 @@ class Offsitecontrol extends Controller
             $thelink = emaillinkstbl::where("thecode",$code)->update(["status"=>"1"]);
 
             // update the designated table 
-                $emaillink = emaillinkstbl::where(["thecode"=>$code,"status" => "1"])->get(["idfk","idfld","thetbl"])->toArray();
+                $emaillink = emaillinkstbl::where(["thecode"=>$code,"status" => "1"])->get(["idfk","idfld","thetbl","requestor","linktoapprove"])->toArray();
 
                 $table = $emaillink[0]['thetbl'];
                 $idfld = $emaillink[0]['idfld'];
@@ -30,10 +31,46 @@ class Offsitecontrol extends Controller
                 
                 if ($table == "quotation_corners") {
                     $status = "2";
+                } else if ($table == "quoteitemstbls") {
+                    $status = "1";
+                } else if ($table == "allowed_users") {
+                    $status = "1";
                 }
                 
                 $updatethetbl = DB::table($table)->where($idfld,$idfk)->update(["status"=>"{$status}"]);
 
+                //if ($updatethetbl) {
+                    $requestor_id = $emaillink[0]['requestor'];
+                    $r_details    = User::where("id",$requestor_id)->get(["name","email"]);
+
+                    $link         = $emaillink[0]["linktoapprove"];
+                    $message      = "Request is approved.";
+
+                    $fromemail    = Auth::user()['email']; 
+                    $from         = Auth::user()['name'];
+                    $reference    = "Quotation";
+                    $item         = "Request is approved";
+
+                    $info = [
+                        "email"     => $r_details[0]->email,
+                        "emailto"   => $r_details[0]->name,
+                        "paytitle"  => "Notification from {$from} on: {$item}",
+                        "fromemail" => $fromemail,
+                        "fromname"  => $from,
+                        "reference" => $reference,
+                        "msg"       => (string) $message,
+                        "thedate"   => date("M. d, Y"),
+                        "type"      => "Request for approval",
+                        "redirect"  => $link
+                    ];
+
+                    $template  = "notifications";
+
+                    Mail::send($template,$info, function($msg) use ($info) {
+                        $msg->to($info['email'],"{$info['emailto']}")->subject("{$info['paytitle']}");
+                        $msg->from("{$info['fromemail']}","{$info['fromname']}");
+                    });
+                //}
             // end 
                 return view("linkapproved");
         } else {
@@ -41,23 +78,25 @@ class Offsitecontrol extends Controller
         }
     }
 
-    function quotation($quoteid = false, $code = false) {
-        if ($code == false) { die("no code found"); }
+    function quotation($quoteid = false, $code = false, $ispreview = false) {
+        if ( $ispreview == false ) {
+            if ($code == false) { die("no code found"); }
 
-        $foundcode = emaillinkstbl::where("thecode",$code)->get("idfk");
-        if (count($foundcode) > 0) {
-            if ($foundcode[0]->idfk != $quoteid) {
-                die("The code and ID do not matched");
+            $foundcode = emaillinkstbl::where("thecode",$code)->get("idfk");
+            if (count($foundcode) > 0) {
+                if ($foundcode[0]->idfk != $quoteid) {
+                    die("The code and ID do not matched");
+                }
+            } else {
+                die("code not found");
             }
-        } else {
-            die("code not found");
         }
 
         $data = DB::select(
             DB::raw(
                 "SELECT qc.*, ct.companyname, ct.address, ct.city, ct.country, ct.state, ct.zip, ct.contactnumber, 
                 ct.email, contt.email, contt.contid, contt.contactname, contt.title, tpt.subtotal, tpt.tax, tpt.taxpercentage, 
-                tpt.total, qit.itemdesc, qit.itemcost, qit.qty, qit.price, users.name  
+                tpt.total, qit.itemdesc, qit.manupart, qit.itemcost, qit.qty, qit.price, users.name  
                 FROM `quotation_corners` as qc join customerstbls as ct on qc.custidfk = ct.id 
                 left join totalpricetbls as tpt on qc.quoteid = tpt.quoteidfk 
                 left join quoteitemstbls as qit on qc.quoteid = qit.quoteidfk 
@@ -65,7 +104,7 @@ class Offsitecontrol extends Controller
                 join contactstbls as contt on qc.quotationsentto = contt.contid where qc.quoteid = '{$quoteid}'; "
             )
         );
-
+        
         $quotestatus = null;
         if (count($data) > 0) {
             if ( strtotime(date("Y-m-d")) > strtotime($data[0]->quotevalidity)) {
@@ -84,6 +123,8 @@ class Offsitecontrol extends Controller
             if ($data[0]->status == "3") {
                 $quotestatus = "ORDERED";
             }
+        } else {
+            die("The quotation is not found");
         }
 
         if (isset($_POST['signbtn'])) {
@@ -146,7 +187,7 @@ class Offsitecontrol extends Controller
             
         }
 
-        return view("customerquotation", compact("data","quotestatus","quoteid"));
+        return view("customerquotation", compact("data","quotestatus","quoteid","ispreview"));
     }
 
     function signandapprovequote() {

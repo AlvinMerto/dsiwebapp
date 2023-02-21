@@ -9,6 +9,7 @@ use App\Models\TheOrders;
 
 use DB;
 use Auth;
+use Carbon\Carbon;
 
 class TheOrdersController extends Controller
 {
@@ -55,6 +56,8 @@ class TheOrdersController extends Controller
                 $bulkorderid    = md5(md5(md5( date("mdyhis") )));
                 $processeddate  = date("Y-m-d");
 
+                // var_dump($qtidfks); return;
+
                 if (count($dataforsave) > 0) {
                     foreach($dataforsave as $dfs) {
                         $total  = $dfs->extendedprice+0;
@@ -80,7 +83,9 @@ class TheOrdersController extends Controller
                     }
                     
                     // update the QuotationCorner
+                    
                     foreach($qtidfks as $qs) {
+                        echo "hello".$qs."<br/>"; // buffer to the screen
                         $updateqtc = QuotationCorner::where("quoteid",$qs)->update(["status"=>"8"]);
                     }
 
@@ -100,9 +105,9 @@ class TheOrdersController extends Controller
                     
                 $itemsdata1 = "select distinct(tbl1.suppname) as suppname
                                     from (select *, sum(qty) as totalqty, sum(price) as totalprice 
-                                        from quoteitemstbls where quoteidfk in ({$wherein}) GROUP by itemdesc) as tbl1";
+                                        from quoteitemstbls where quoteidfk in ({$wherein}) GROUP by itemdesc, itemcost, suppname) as tbl1";
             }
-
+            // echo $itemsdata1;
             // echo $itemsdata; // return;
             $data    = DB::select(DB::raw($itemsdata." ".$where));
             $headers = DB::select(DB::raw($itemsdata1));
@@ -215,6 +220,12 @@ class TheOrdersController extends Controller
         $headers   = TheOrders::where("bulkorderid",$weeklyorder)->get("vendor as suppname");
         $title     = "Processed Orders";
         $funcfrom  = "processed";
+
+        // $ddate = "2012-10-18";
+        // $date = new DateTime($ddate);
+        // $week = $date->format("W");
+        // echo $week;
+        // echo Carbon::today();
         return view("theorders", compact("data","headers","orderdate","fromvendor","totals","qtidfks","title","funcfrom","weeklyorder"));
     }
 

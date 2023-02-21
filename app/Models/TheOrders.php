@@ -13,7 +13,7 @@ class TheOrders extends Model
 
     protected $fillable   = [
         "quoteid","custidfk","contidfk","processeddate",
-        "bulkorderid","vendor","description","quoteid",
+        "bulkorderid","weeknumber","vendor","description","quoteid",
         "qty","unitcost","extendedcost","estimatedsh","estimatedshtax","tax",
         "totalcost","totalcosttax","inputby","status","created_at","updated_at"
     ];
