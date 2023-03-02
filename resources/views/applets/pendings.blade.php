@@ -1,4 +1,11 @@
 <div class="table-wrapper applettable">
+        <!-- <button class='dsibutton intablink dsitext' 
+                data-tab='schedule' 
+                data-id='<?php //echo $data[0]->id; ?>' 
+                data-toggle='modal' 
+                data-viewspan = "scheduleactivityspan"
+                data-target='#scheduletaskdivbox'> Schedule a task </button> -->
+
         <table id="datatable1" class="table display responsive nowrap">
             <thead>
                 <th> # </th>

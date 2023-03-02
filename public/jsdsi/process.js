@@ -104,10 +104,10 @@ $(document).on("contextmenu", "#contextmenu" ,function(e) {
             "<li id='itemdetails' data-toggle='modal' data-target='#viewitemdetails'> Item details </li>"+
             "<li data-toggle='modal' data-target='#insertitem' class='callitemssource' data-window='additem'> Add Custom Item </li>"+
             "<li data-toggle='modal' data-target='#insertitem' class='callitemssource' data-window='taxable'> Insert Item from Source </li>"+
-            "<li> Subtotal </li>"+
-            "<li> Labor </li>"+
-            "<li> Freight </li>"+
-            "<li data-toggle='modal' data-target='#addcomment' class='callwindow' data-window='loadingcomments' data-insertospan='loadingcommentsspan'> Comment </li>"+
+            "<li data-toggle='modal' data-target='#subtotaldiv'> Subtotal </li>"+
+            "<li data-toggle='modal' data-target='#insertotheritem' class='callwindow' data-window='insertotheritems' data-insertospan='insertotheritemspan'> <i class='fa fa-angle-right' aria-hidden='true'></i> Labor </li>"+
+            "<li data-toggle='modal' data-target='#insertotheritem' class='callwindow' data-window='insertotheritems' data-insertospan='insertotheritemspan'> <i class='fa fa-angle-right' aria-hidden='true'></i> Freight </li>"+
+            "<li data-toggle='modal' data-target='#addcomment' class='callwindowwithid' data-window='loadingcomments' data-insertospan='loadingcommentsspan'> Comment </li>"+
         "</ul>"+
      "</div>").css({
             top: e.clientY - $(".contextmenushow").height() / 2,
@@ -871,7 +871,8 @@ $(document).on("click","#createnewcategory", function(){
 
 // add new product line 
     $(document).on("click","#addnewproductline", function(){
-        let iscustom   = null;
+        let iscustom      = null;
+        let isproductline = null;
 
         if ($("#iscustomval").is(":checked")) {
             iscustom = "1";
@@ -879,11 +880,18 @@ $(document).on("click","#createnewcategory", function(){
             iscustom = "0";
         }
 
+        if ($("#isproductline").is(":checked")) {
+            isproductline = "1";
+        } else {
+            isproductline = "0";
+        }
+
         let basicinfo                  = new Object();
             basicinfo.theproductline   = $(document).find("#productlinename").val();
             basicinfo.minimummarkup    = $(document).find("#initialmarkup").val();
             basicinfo.iscustom         = iscustom;
             basicinfo.thegrpid         = $(document).find("#newgrpid").val();
+            basicinfo.status           = isproductline;
 
         a.savetodatabase(basicinfo, "productlines", false, false, function(data){
             window.location.reload();
@@ -908,12 +916,34 @@ $(document).on("click","#createnewcategory", function(){
     });
 // end 
 
+// ask customer id change
+$(document).on("click","#asproductline", function(){
+    let grpid       = $(this).data("grpid");
+    let basicinfo   = new Object();
+
+    if ( $(this).is(":checked") ) {
+        basicinfo.status    = "1";
+    } else {
+        basicinfo.status    = "0";
+    }
+   
+    a.updateentries(basicinfo, "productlines", grpid , "thegrpid", function(data){
+        window.location.reload();
+    });
+});
+// end 
+
+
 // expdivbox
     $(document).on("click","#setexpirybtn", function(){
         if ( $(document).find(".expdivbox").hasClass("hidethis") ) {
             $(document).find(".expdivbox").removeClass("hidethis");
+            $(document).find(".expirytxtbox").removeAttr("disabled");
+            $(document).find("#freqselect").removeAttr("disabled");
         } else {
             $(document).find(".expdivbox").addClass("hidethis");
+            $(document).find(".expirytxtbox").attr("disabled");
+            $(document).find("#freqselect").attr("disabled");
         }
     })
 //
@@ -924,3 +954,17 @@ $(document).on("click","#createnewcategory", function(){
         a.showdwindow_to_here($(this).data("window"), false, $(this).data("insertospan"));
     });
 // end call window
+
+    $(document).on("click",".callwindowwithid", function(){
+        
+        if (qtid.length > 1) {
+            alert("Please select one(1) item only"); return;
+        } 
+
+        let quoteitemid = $(document).find("#quoteidfk").val();
+
+        a.showdwindow_to_here($(this).data("window"), 
+                             qtid[0], 
+                             $(this).data("insertospan"),
+                             quoteitemid);
+    });

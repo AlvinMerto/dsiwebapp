@@ -10,7 +10,7 @@
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
     <body style="font-family: 'Alegreya Sans', sans-serif; font-size: 1.1rem; background: #ccc;">
-        <div class='custbigdiv pd-l-30 pd-r-30'>
+        <div class='custbigdiv pd-l-30 pd-r-30 pd-b-20'>
             <?php if($ispreview == false) { ?>
             <div class='leftfloatdiv'>
                 <?php
@@ -41,12 +41,12 @@
                 <?php } ?>
             </div>
             <?php } ?>
-            <div class='row' id='ouroffer'>
+            <!-- <div class='row' id='ouroffer'>
                 <div class='col-md-12 custquoteheader' style="background-image:url('{{url('images/quotation_template_03.png')}}');padding: 79px 0px;background-repeat: no-repeat;">
 
                 </div>
-            </div>
-            <div class='row mg-t-50'>
+            </div> -->
+            <div class='row pd-t-15 pd-b-15'>
                 <div class='col-md-7'> 
                     <div class='removepmarg blacktext'>
 				        <p> Quotation to: </p>
@@ -89,24 +89,115 @@
                     <table class='custquotetbl'>
                         <tr>
                             <th> NO. </th>
-                            <th> Part # </th>
-                            <th> DESCRIPTION </th>
-                            <th> PRICE </th>
-                            <th> QTY </th>
+                            <?php 
+                                foreach($flds as $f) {
+                                    echo "<th>";
+                                        echo $fldname[$f];
+                                    echo "</th>";
+                                }
+                            ?>   
+                            <th> QTY </th>                         
+                            <th> PRICE </th>                            
                             <th> TOTAL </th>
                         </tr>
                         <?php
                             if (count($data) > 0) {
-                                $count = 1;
+                                $count        = 1;
+                                $countttt     = 1;
+                                $subtotalname = null;
+                                $subtotalqty  = 0;
+                                $subprice     = 0;
+                                $subsubprice  = 0;
+                                $ext          = 0;
+
+
                                 foreach($data as $d) {
-                                    echo "<tr>";
-                                        echo "<td>{$count}</td>";
-                                        echo "<td>{$d->manupart}</td>";
-                                        echo "<td>{$d->itemdesc}</td>";
-                                        echo "<td>".number_format($d->price,2)."</td>";
-                                        echo "<td>{$d->qty}</td>";
-                                        echo "<td>".number_format($d->price,2)."</td>";
-                                    echo "</tr>";
+                                    
+
+                                    if ($d->subtotalidfk != null) {
+                                        
+                                        if (in_array("showbreakdown",$sets)) {
+                                            
+                                            $displaytotal = false;
+
+                                            foreach($subtotaltbl as $st) {
+                                                if ($st->subtotalid == $d->subtotalidfk) {
+                                                    $subtotalname = $st->subtotalname;
+                                                    // $subtotalqty  = $subtotalqty+$d->qty;
+                                                    $subtotalqty  = $st->subtotalqty;
+                                                    $price        = $d->price*$d->qty;
+                                                    $subprice     = $subprice+$price;
+                                                    $subsubprice  = $subsubprice+$subprice;
+                                                }
+
+                                                $ext = $subprice*$st->subtotalqty;
+                                            }
+                                            
+                                            if (count($subtotaltbl) == $countttt) {
+                                                $displaytotal = true;
+                                            }
+                                            
+                                                if ($displaytotal) {
+                                                    echo "<tr>";
+                                                        echo "<td>";
+                                                            echo $count;
+                                                        echo "</td>";
+                                                        echo "<td colspan='1'>";
+                                                            echo $subtotalname;
+                                                        echo "</td>";
+                                                        echo "<td colspan=''>";
+                                                            echo $subtotalqty;
+                                                        echo "</td>";
+                                                        echo "<td>";
+                                                            echo number_format($subprice,2);
+                                                        echo "</td>";
+                                                        echo "<td>";
+                                                            echo number_format($ext,2);
+                                                        echo "</td>";
+                                                    echo "</tr>";
+
+                                                    $subtotalname = null;
+                                                    $subtotalqty  = 0;
+                                                    $subprice     = 0;
+                                                    $ext          = 0;
+
+                                                }
+                                            $countttt++;
+                                        }
+                                    } else {
+                                        echo "<tr>";  
+                                            echo "<td style='position: relative'>{$count}";
+                                                
+                                            echo "</td>";
+                                            foreach($flds as $fs) {
+                                                $f = $fs;
+                                                echo "<td>";
+                                                    if ($fs == "shippingfinalprice") {
+                                                        echo number_format($d->$fs,2);
+                                                    } else {
+                                                        echo $d->$fs;
+                                                    }
+                                                echo "</td>";
+                                            }
+                                            // echo "<td>{$d->manupart}</td>";
+                                            // echo "<td>{$d->itemdesc}</td>";
+                                            echo "<td>{$d->qty}</td>";
+                                            echo "<td>".number_format($d->price,2)."</td>";
+                                            echo "<td style='position:relative;'>".number_format($d->price,2);
+                                                if (in_array("withexpiry",$sets)) {
+                                                    if ($d->withexpiry != null) {
+                                                        $expiry = date("M. d, Y h:i A", strtotime($d->created_at." + ".$d->expnumber." ".$d->expunit));
+                                                        echo "<div class='titlediv'>";
+                                                            echo '<i class="fa fa-chevron-left" aria-hidden="true" style="font-size: 9px;"></i>';    
+                                                            // echo "&nbsp; {$d->expnote}";
+                                                            echo "<span> price valid until {$expiry} </span>";
+                                                        echo "</div>";
+                                                    }
+                                                }
+                                            echo "</td>";
+                                        echo "</tr>";
+                                    }
+                                    
                                     $count++;
                                 }
                             } else {
@@ -118,7 +209,7 @@
             </div>
             <div class='row '>
                 <div class='col-md-7 pd-t-50 blacktext'> 
-                    <p> Thank you very much. </p>
+                    <!-- <p> Thank you very much. </p> -->
                 </div>
                 <div class='col-md-5'> 
                     <div>
@@ -131,7 +222,7 @@
                         <div>
                             <div class='flex justit grayit removeborder'> 
                                 <div class='pd-t-10'> tax </div>
-                                <div class='pd-t-10'> <?php echo $data[0]->tax; ?> </div>
+                                <div class='pd-t-10'> <?php echo number_format($data[0]->tax,2); ?> </div>
                             </div>
                         </div>
                         <div>
@@ -144,23 +235,25 @@
                 </div>
             </div>
             <div class='row mg-t-50'>
-                <div class='col-md-7'> </div>
+                <div class='col-md-7'>
+                    
+                </div>
                 <div class='col-md-5'>
                     <center>
-                    <div class='removepmarg blacktext'>
-                        <p style='font-size:25px; text-transform:capitalize;'> <?php echo $data[0]->name; ?> </p>
-				        <hr style='margin:0px;'/>
-				        <p> Name and Signature </p>
-				        <p> Sales Personnel </p>
-                    </div>
+                        <div class='removepmarg blacktext'>
+                            <p style='font-size:25px; text-transform:capitalize;'> <?php echo $data[0]->name; ?> </p>
+                            <hr style='margin:0px;'/>
+                            <p> Name and Signature </p>
+                            <p> Sales Personnel </p>
+                        </div>
                     </center>
                 </div>
             </div>
-            <div class='row mg-t-50'>
+            <!-- <div class='row mg-t-50'>
                 <div class='col-md-12' style="background-image:url('{{url('images/bot_06.png')}}'); padding: 79px 0px 0px; background-repeat: no-repeat;">
 
                 </div>
-            </div>
+            </div> -->
         </div>
         <div class='custbigdiv' id='termsandcondition'>
             terms and condition

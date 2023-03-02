@@ -56,8 +56,13 @@ class GlobalComputation extends Model
 
         if ($this->withshipping != null) {
             // compute the selling price with shipping cost
-            $shipper              = (100/$this->shipcostmarkup);
-            $shipaddon            = $this->shipcost/$shipper;
+            if ($this->shipcostmarkup > 0) {
+                $shipper              = (100/$this->shipcostmarkup);
+                $shipaddon            = $this->shipcost/$shipper;
+            } else {
+                $shipaddon            = 0;
+            }
+
             $this->totalshipcost  = $this->shipcost+$shipaddon;
 
             $this->sellprice     = $this->sellprice+$this->totalshipcost;

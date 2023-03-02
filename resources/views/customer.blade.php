@@ -14,13 +14,9 @@
 </div> -->
 <div class="br-mainpanel pd-30">
     <div class='bgwhite'>
-        <div class='row dsibox pd-20'>
-            <div class='col-md-3'>
-                <button class='dsibutton' id='createnewrecord' data-toggle='modal' data-target='#addnewrecord'> Create new Record </button>
-                <button class='dsibutton' id='findarecord'> Find a Record </button>
-            </div>
-            <div class='col-md-9'>
-                <div class='flex' style='justify-content: space-between;'>
+        <div class='row dsibox pd-0'>
+            <div class='col-md-12'>
+                <div class='flex pd-t-10 pd-b-10 pd-r-15 pd-l-15' style='justify-content: space-between;'>
                     <h5 style='margin: 10px 0px 0px 0px;'> Customer's Information </h5>
                     <div>
                         <button class='dsibutton intablink dsitext' 
@@ -54,6 +50,10 @@
         <div class='dsibox'>
             <div class='row'>
                 <div class='col-md-3 bd-r'>
+                    <div class='pd-t-20 pd-l-20 pd-r-20 flex' style=''>
+                        <button class='dsibutton mg-r-10 ' id='createnewrecord' data-toggle='modal' data-target='#addnewrecord'> Create new Record </button>
+                        <button class='dsibutton' id='findarecord'> Find a Record </button>
+                    </div>
                     <div class='dsibox pd-10 pd-l-20 pd-t-20 pd-b-20'>
                         <a href="{{route('quotes')}}<?php echo "/".$id."/new"; ?>" class='dsibutton linkbtnview'> Create Quotation for this Customer </a>
                     </div>

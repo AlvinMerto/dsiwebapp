@@ -25,12 +25,12 @@ class Dsifronprocs {
         });
     }
 
-    showdwindow_to_here(thewindow, id = false, displayhere) {
+    showdwindow_to_here(thewindow, id = false, displayhere, anotherid = false) {
         $(document).find("#"+displayhere).html("...loading data");
         $.ajax({
             url  : url+"/"+thewindow,
             type : "GET",
-            data : { id : id },
+            data : { id : id , anotherid : anotherid},
             dataType : "html",
             success : function(data) {
                 $(document).find("#"+displayhere).html(data);
@@ -209,11 +209,13 @@ class Dsifronprocs {
     // end 
 
     // remove item :: hide 
-    removeitem(tbl, id, idfld, somefunction, truedelete = false) {
-        var conf  = confirm("Are you sure you wanted to delete this data?");
-         
-        if (!conf) {
-            return;
+    removeitem(tbl, id, idfld, somefunction, truedelete = false, bypassalert = false) {
+        if (bypassalert == false) {
+            var conf  = confirm("Are you sure you wanted to delete this data?");
+            
+            if (!conf) {
+                return;
+            }
         }
 
         $.ajax({
@@ -603,7 +605,7 @@ class Dsifronprocs {
                     somefunction(data);
                 }
             }, error : function(){
-                alert("error saving to Subtotal table");
+                alert("error saving to "+table+" table");
             }
         })
     }

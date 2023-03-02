@@ -13,11 +13,12 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('subtotaltbls', function (Blueprint $table) {
-            $table->increments("subtotalid");
+        Schema::create('grttables', function (Blueprint $table) {
+            $table->increments("grtid");
+            $table->string("custid");
             $table->string("quoteidfk");
-            $table->string("subtotalname");
-            $table->string("subtotalqty");
+            $table->string("grttypeid");
+            $table->string("grtvalue");
             $table->string("inputby");
             $table->string("status");
             $table->timestamps();
@@ -31,6 +32,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('subtotaltbls');
+        Schema::dropIfExists('grttables');
     }
 };

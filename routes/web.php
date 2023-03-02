@@ -120,6 +120,7 @@ Route::middleware("auth")->group(function(){
     Route::post("/checkitemneedsapproval",[QuotationsController::class,"checkitemneedsapproval"])->name('checkitemneedsapproval');
     Route::get("/insertotheritems",[QuotationsController::class,"insertotheritems"])->name('insertotheritems');
     Route::get("/loadingcomments",[QuotationsController::class,"loadingcomments"])->name('loadingcomments');
+    Route::get("/editsubqty",[QuotationsController::class,"editsubqty"])->name('editsubqty');
 });
 // end of quotes applets
 
@@ -130,7 +131,6 @@ Route::middleware("auth")->group(function(){
     Route::get("/processed/{weekorderid?}/{fromvendor?}",[TheOrdersController::class,"showprocessedorder"])->name('processed');
     Route::post("/totalestsh",[TheOrdersController::class,"totalestsh"])->name('totalestsh');
     Route::post("/gettotalcost",[TheOrdersController::class,"gettotalcost"])->name('gettotalcost');
-    
 });
 // end 
 

@@ -18,6 +18,10 @@ use App\Models\Productline;
 use App\Models\itemreferencetbl;
 use App\Models\emaillinkstbl;
 use App\Models\AllowedUser;
+use App\Models\CommentsTbl;
+use App\Models\Subtotaltbl;
+use App\Models\viewquoteopts;
+use App\Models\grttable;
 
 use App\Models\GlobalComputation;
 
@@ -70,6 +74,10 @@ class QuotationsController extends Controller
                 if (count($tx) > 0) {
                     $thetax  = $tx[0]->thetax;
                 }
+
+                // save to grt table
+
+                // end 
                 
                 // create totalpricetbls 
                     $ddd  = [
@@ -83,6 +91,49 @@ class QuotationsController extends Controller
                     $tptbls     = Totalpricetbl::create($ddd);
                 // end 
                 
+                $savetoviewopts = viewquoteopts::insert([
+                    [
+                        "viewoptionfld" => "withexpiry",
+                        "viewoptiontxt" => "expiry",
+                        "quoteidfk"     => $quoteid,
+                        "optiontype"    => "set",
+                        "inputby"       => Auth::id(),
+                        "status"        => "1"
+                    ],
+                    [
+                        "viewoptionfld" => "itemdesc",
+                        "viewoptiontxt" => "Description",
+                        "quoteidfk"     => $quoteid,
+                        "optiontype"    => "fld",
+                        "inputby"       => Auth::id(),
+                        "status"        => "1"
+                    ],
+                    [
+                        "viewoptionfld" => "showbreakdown",
+                        "viewoptiontxt" => "breakdown",
+                        "quoteidfk"     => $quoteid,
+                        "optiontype"    => "set",
+                        "inputby"       => Auth::id(),
+                        "status"        => "1"
+                    ],
+                    [
+                        "viewoptionfld" => "incorporatetaxornot",
+                        "viewoptiontxt" => "tax",
+                        "quoteidfk"     => $quoteid,
+                        "optiontype"    => "set",
+                        "inputby"       => Auth::id(),
+                        "status"        => "1"
+                    ],
+                    [
+                        "viewoptionfld" => "shippingfinalprice",
+                        "viewoptiontxt" => "Shipping Fee",
+                        "quoteidfk"     => $quoteid,
+                        "optiontype"    => "fld",
+                        "inputby"       => Auth::id(),
+                        "status"        => "1"
+                    ],
+                ]);
+
                // return redirect()->route('quotes', ['id' => $id,'quoteid'=>$quoteid]);
                return redirect("quotes/{$id}/$quoteid");
             } else {
@@ -94,16 +145,20 @@ class QuotationsController extends Controller
                                     ->join("users","totalpricetbls.inputby","=","users.id")
                                     ->where("totalpricetbls.quoteidfk",$quoteid)->get();
                 
-                $empdata      = DB::table("intereststbls")
+                $emps         = DB::table("intereststbls")
                                     ->select("intereststbls.theinterest","intereststbls.interid")
                                     ->leftJoin("customerstbls","intereststbls.interid","=","customerstbls.interest")
                                     ->where("customerstbls.id",$id)->get();
 
+                $empdata       = grttable::where(["quoteidfk"=>$quoteid,"custid"=>$id])->get();
+
+                $viewopts      = viewquoteopts::where("quoteidfk",$quoteid)->get();
+
                 $overallqtdets = QuotationCorner::where("quoteid", $quoteid)->get();
                 
-                if (count($empdata) == 0) {
-                    return back()->with('status', "You need to specify the company's interest to proceed.");
-                }
+                // if (count($empdata) == 0) {
+                //     return back()->with('status', "You need to specify the company's GRT type to proceed.");
+                // }
 
                 if (count($overallqtdets) > 0) {
                     if ( strtotime(date("Y-m-d")) > strtotime($overallqtdets[0]->quotevalidity) ) {
@@ -175,10 +230,10 @@ class QuotationsController extends Controller
                     }
                 // end approve
 
-                $contacts = contactstbl::where("custidfk", $id)->get(["contid","contactname"]);
+                $contacts     = contactstbl::where("custidfk", $id)->get(["contid","contactname"]);
 
                 $categories   = DB::select(DB::raw("select distinct(category) from itemstbls"));
-
+                
             }
 
             $percentage  = markuptbl::all();
@@ -193,7 +248,7 @@ class QuotationsController extends Controller
                 $ints = $initials[0][0].$initials[1][0];
             }
 
-            return view("quotations", compact('data','allcust','ints','quoteid','quotedets','percentage','empdata','categories','contacts','overallqtdets','showapprovebtn','allowed','allowdetails','haveaccess','isowner'));
+            return view("quotations", compact('data','allcust','ints','quoteid','id','quotedets','percentage','emps','empdata','categories','contacts','overallqtdets','showapprovebtn','allowed','allowdetails','haveaccess','isowner','viewopts'));
         }
     }
 
@@ -239,8 +294,8 @@ class QuotationsController extends Controller
 
     function additem(Request $req) {
         $percentage   = markuptbl::all();
-        $itemtype     = DB::select(DB::raw("select * from productlines group by thegrpid"));
-
+        $itemtype     = DB::select(DB::raw("select * from productlines where status = '1' group by thegrpid"));
+        
         $itemgrpid  = md5(md5(md5(date("mdyhis"))));
         return view("quotesapplets.additem", compact("percentage","itemtype","itemgrpid"));
     }
@@ -376,7 +431,11 @@ class QuotationsController extends Controller
             $allowed = GlobalComputation::checkifhaveaccess($viewer, "quotation_corners" ,$quoteid);
         }
 
-        return view("quotesapplets.quotetable", compact("quotesinformation","allowed"));
+        $comments     = CommentsTbl::where("quoteidfk",$quoteid)->get();
+
+        $subtotals    = Subtotaltbl::where("quoteidfk",$quoteid)->get();
+
+        return view("quotesapplets.quotetable", compact("quotesinformation","allowed","comments","subtotals"));
     }
 
     function displayperitem(Request $req) {
@@ -427,8 +486,10 @@ class QuotationsController extends Controller
                                     ]);
         // end 
         
+        $datetoday = date("Y-m-d h:i:s A");
+
         $data = Quoteitemstbl::where("quoteitemid",$uniqueid)->get();
-        return view("quotesapplets.displayperitem", compact('data'));
+        return view("quotesapplets.displayperitem", compact('data',"datetoday"));
     }
 
     function saveperitem_qt(Request $req) {
@@ -446,7 +507,10 @@ class QuotationsController extends Controller
                             ->join("quotation_corners","customerstbls.id","=","quotation_corners.custidfk")
                             ->where("quotation_corners.quoteid",$qidfk)->get();
         
-        $custint      = $ciinfo[0]->interest;
+        // $custint      = $ciinfo[0]->interest;
+
+        $grt          = grttable::where("quoteidfk",$qidfk)->get();
+        $custint      = $grt[0]->grttypeid; 
 
         // set defaults
         $compute                    = new GlobalComputation();
@@ -465,21 +529,27 @@ class QuotationsController extends Controller
             $compute->shipcost          = $details[0]->shippingcost;
         }
 
-        $compute->custint           = $ciinfo[0]->interest;
-
+        // $compute->custint           = $ciinfo[0]->interest;
+        $compute->custint              = $custint;
+      
         // item
         if ($fld == "markupvalue") { $compute->unitcostmarkup = $val; }
-        if ($fld == "itemcost") { $compute->unitcost = $val; }
-        if ($fld == "qty") { $compute->qty = $val; }
+        if ($fld == "itemcost")    { $compute->unitcost       = $val; }
+        if ($fld == "qty")         { $compute->qty            = $val; }
 
         // shipping
-        if ($fld == "shippingcost") { $compute->shipcost = $val; }
-        if ($fld == "shippingmarkup") { $compute->shipcostmarkup = $val; }
+        if ($fld == "shippingcost")   { 
+            $compute->withshipping      = true;
+            $compute->shipcost          = $val;
 
-        if ($compute->shipcost == 0) {
-            $compute->withshipping      = null;
-            $compute->shipcostmarkup    = "0";
-            $compute->shipcost          = "0";
+            if ($compute->shipcost <= 0) {
+                $compute->withshipping      = null;
+            }
+        }
+
+        if ($fld == "shippingmarkup") { 
+            $compute->withshipping      = true;
+            $compute->shipcostmarkup    = $val; 
         }
 
         $minimummarkup = GlobalComputation::checkminimummarkup($details[0]->productlineid);
@@ -505,7 +575,8 @@ class QuotationsController extends Controller
             "withshipping"          => $compute->withshipping,
             "shippingcost"          => $compute->shipcost,
             "shippingmarkup"        => $compute->shipcostmarkup,
-            "status"                => $status
+            "status"                => $status,
+            "qty"                   => $compute->qty
         ];
 
         $update    = Quoteitemstbl::where("quoteitemid",$id)->update($returndata);
@@ -519,7 +590,8 @@ class QuotationsController extends Controller
             "shippingfinalprice"    => number_format($compute->totalshipcost,2),
             "withshipping"          => $compute->withshipping,
             "shippingcost"          => number_format($compute->shipcost,2),
-            "shippingmarkup"        => $compute->shipcostmarkup
+            "shippingmarkup"        => $compute->shipcostmarkup,
+            'qty'                   => $compute->qty
         ];
 
         return response()->json($returndata1);
@@ -696,7 +768,7 @@ class QuotationsController extends Controller
 
     function insertotheritems(Request $req) {
         $percentage   = markuptbl::all();
-        $itemtype     = DB::select(DB::raw("select * from productlines group by thegrpid"));
+        $itemtype     = DB::select(DB::raw("select * from productlines where status = '0' group by thegrpid"));
 
         $itemgrpid  = md5(md5(md5(date("mdyhis"))));
         
@@ -704,7 +776,45 @@ class QuotationsController extends Controller
     }
 
     function loadingcomments(Request $req) {
-        return view ("quotesapplets.itemcomment");
+        $quoteitemid = $req->input("id");
+        $quoteidfk   = $req->input("anotherid");
+
+        $comment = DB::select(
+            DB::raw("select * from comments_tbls where quoteitemidfk = '{$quoteitemid}'")
+        );
+
+        $action = null;
+        
+        if (count($comment) > 0) {
+            $action = "update";
+        } else {
+            $action = "new";
+        }
+
+        $overallqtdets = QuotationCorner::where("quoteid", $quoteidfk)->get("inputby");
+
+        $owner   = $overallqtdets[0]->inputby;
+        $viewer  = Auth::id();
+
+        $allowed = false;
+        $isowner = false;
+
+        if ($owner == $viewer) {
+            $allowed = true;
+            $isowner = true;
+        } else {
+            $allowed = GlobalComputation::checkifhaveaccess($viewer, "quotation_corners" ,$quoteidfk);
+        }
+
+        return view ("quotesapplets.itemcomment", compact("comment","action","allowed","isowner"));
+    }
+
+    function editsubqty(Request $req) {
+        $subtotalid = $req->input("id");
+
+        $data       = Subtotaltbl::where("subtotalid",$subtotalid)->get();
+
+        return view ("quotesapplets.editsubqty", compact("data"));
     }
 
 }

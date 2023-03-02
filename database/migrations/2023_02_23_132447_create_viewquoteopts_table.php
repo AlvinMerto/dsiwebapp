@@ -13,11 +13,11 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('subtotaltbls', function (Blueprint $table) {
-            $table->increments("subtotalid");
+        Schema::create('viewquoteopts', function (Blueprint $table) {
+            $table->increments("vopid");
+            $table->string("viewoptionfld");
             $table->string("quoteidfk");
-            $table->string("subtotalname");
-            $table->string("subtotalqty");
+            $table->string("optiontype");
             $table->string("inputby");
             $table->string("status");
             $table->timestamps();
@@ -31,6 +31,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('subtotaltbls');
+        Schema::dropIfExists('viewquoteopts');
     }
 };

@@ -222,7 +222,7 @@ $(document).on("input change", "#costtxt", function(){
 
         $("<input type='text' class='inlineeditbox' value='"+content+"'/>")
             .on("blur", function(){
-
+            //    alert($(this).val());
             //    if (content == $(this).val()) {
             //        alert("equal")
             //    } else {
@@ -257,7 +257,6 @@ $(document).on("input change", "#costtxt", function(){
                         });
                     } else {
                         a.saveperitem_qt("quoteitemstbls",dataid,"quoteitemid",datafld, $(this).val() ,function(data){
-
                             $(document).find("#profit_"+idname).html(data['profit']);
                             $(document).find("#extended_"+idname).html(data['extended']);
                             $(document).find("#price_"+idname).html(data['price']);
@@ -373,18 +372,18 @@ $(document).on("click","#askforapproval", function() {
 // end 
 
 // save quotation 
-$(document).on("click","#savequotation", function(){
-    let theitems                 = new Object();
-        theitems.quotationname   = $(document).find("#documentname").val();
-        theitems.quotationsentto = $(document).find("#documentcontact").val();
+    $(document).on("click","#savequotation", function(){
+        let theitems                 = new Object();
+            theitems.quotationname   = $(document).find("#documentname").val();
+            theitems.quotationsentto = $(document).find("#documentcontact").val();
 
-    let thekey = $(document).find("#quoteidfk").val();
-    
-    a.updateentries(theitems, "quotation_corners", thekey, "quoteid", function(){
-        alert("Successfully Saved");
-        window.location.reload();
+        let thekey = $(document).find("#quoteidfk").val();
+        
+        a.updateentries(theitems, "quotation_corners", thekey, "quoteid", function(){
+            alert("Successfully Saved");
+            window.location.reload();
+        });
     });
-});
 // end quotation
 
 // send quotation 
@@ -476,6 +475,10 @@ $(document).on("click","#savenewreference", function(){
             "<button id='deletethisdiv' data-tblid='"+data+"' data-domid='"+idname+"' class='btn btn-danger btn-sm mg-t-5'> Delete </button>"+
          "</div>").appendTo("#criteriadivdisplay");
 
+        $(document).find("#info_criteriaid").val("");
+        $(document).find("#info_referenceid").val("");
+        $(document).find("#info_thevalue").val("");
+
     }, false, false);
 });
 // end 
@@ -520,16 +523,27 @@ $(document).on("click","#savenewreference", function(){
     $(document).on("click","#insertsubtotal", function(){
         let subtotaldesc = $(document).find("#subtotaldesc").val();
         let subtotalqty  = $(document).find("#subtotalqty").val();
+        let quoteidfk    = $(document).find("#quoteidfk").val();
 
         let theobject              = new Object();
             theobject.subtotalname = subtotaldesc;
             theobject.subtotalqty  = subtotalqty;
+            theobject.quoteidfk    = quoteidfk;
 
         a.savetodatabase(theobject, "subtotaltbls", false, false, function(data){
             let a = new Dsifronprocs();
 
-            a.updatemultipleitems(data, "quoteitemstbls", qtid ,"subtotalidfk" , "quoteidfk", function(){
-                window.location.reload();
+            a.updatemultipleitems(data, "quoteitemstbls", qtid ,"subtotalidfk" , "quoteitemid", function(data){
+                alert("Subtotal Added");
+                
+                qtid = [];
+
+                $(document).find("#subtotaldesc").val("");
+                $(document).find("#subtotalqty").val("");
+                $("#subtotaldiv").modal("hide");
+
+                a.displaythequoteitems( $(document).find("#quoteidfk").val() ) 
+                a.computatethetotal( $(document).find("#quoteidfk").val() );
             });
         });
     });
@@ -583,6 +597,30 @@ $(document).on("click","#savenewreference", function(){
     });
 // end 
 
+// start of mark up line
+$(document).on("change","#markuplineselect", function(){
+    let vals = $(this).val();
+    
+    let id    = vals.split("_")[0];
+    let isdef = vals.split("_")[1];
+    let grpid = vals.split("_")[2];
+
+    if (isdef == 1) {
+        $(document).find("#customitemtypetxt").show();
+    } else {
+        $(document).find("#customitemtypetxt").hide();
+    }
+
+    if (undefined == grpid) {
+        $(document).find("#markupselspan").html("select from the item type...");
+    } else {
+        a.loadmarkups(grpid, function(data){
+            $(document).find("#markupselspan").html(data);
+        });
+    }
+});
+// end of markup line
+
 // call window 
     // callawindow(uniqueid, windowtocall, displayin, somefunction = false)
     $(document).on("click","#itemdetails", function(){
@@ -602,10 +640,10 @@ $(document).on("click","#savenewreference", function(){
         
         if ( $(this).siblings(".referencevalues").hasClass("hidethis") ) {
             $(this).siblings(".referencevalues").removeClass("hidethis");
-            $(this).siblings(".referencevalues").show();
+            $(this).siblings(".referencevalues").show("slow");
         } else {
             $(this).siblings(".referencevalues").addClass("hidethis");
-            $(this).siblings(".referencevalues").hide();
+            $(this).siblings(".referencevalues").hide("slow");
         }
     });
 // end opening window
@@ -811,6 +849,11 @@ $(document).on("click","#savethisotheritem", function(){
             basicinfo.markupvalue       = $(document).find("#percentageselect").val();
         }
 
+        if (basicinfo.itemtype == "Freight") {
+            basicinfo.qty    = "1";
+        } else {
+            basicinfo.qty    = $(document).find("#qtytxt").val();
+        }
 
         // ## shipping 
             // if (basicinfo.itemtype == "Freight") {
@@ -899,6 +942,7 @@ $(document).on("click","#savethisotheritem", function(){
 });
 // end 
 
+// 
 $(document).on("change", "#thetypeofitem", function(){
     let itemselect = $(this).val();
 
@@ -913,3 +957,138 @@ $(document).on("change", "#thetypeofitem", function(){
         $(document).find(".forfreight").hide();
     }
 });
+
+// add comment 
+    $(document).on("click","#addcommentbtn", function(){
+        if (qtid.length > 1){
+            alert("Select only one(1) item.");
+            return;
+        }
+
+        let quoteidfk = $(document).find("#quoteidfk").val();
+
+        let basicinfo                   = new Object();
+            basicinfo.quoteidfk         = quoteidfk;
+            basicinfo.quoteitemidfk     = qtid[0];
+            basicinfo.thecomment        = $(document).find("#thecommenttxt").val();
+            basicinfo.status            = "1";
+
+        a.savetodatabase(basicinfo, "comments_tbls", false, false, function(data){
+            alert("comment saved");
+            $("#addcomment").modal("hide");
+        });
+
+    });
+// end add comment btn
+
+// update comment btn 
+    $(document).on("click","#updatecommentbtn", function(){
+        let theitems            = new Object();
+            theitems.thecomment = $(document).find("#thecommenttxt").val();
+
+        if (qtid.length >  1) {
+            alert("Select only one(1) item.");
+            return;
+        }
+
+        a.updateentries(theitems, "comments_tbls", qtid[0], "quoteitemidfk", function(){
+            alert("updated");
+            $("#addcomment").modal("hide");
+        });
+    })
+// end
+
+// remove subtotal 
+    $(document).on("click",".removesubtotal", function(){
+        let subtotalid = $(this).data("subtotalid");
+
+        a.removeitem("subtotaltbls", subtotalid, "subtotalid", function(data){
+            let a = new Dsifronprocs();
+
+            let theitems                = new Object();
+                theitems.subtotalidfk   = null;
+
+            a.updateentries(theitems, "quoteitemstbls", subtotalid, "subtotalidfk", function(data){
+                a.displaythequoteitems( $(document).find("#quoteidfk").val() ) 
+                a.computatethetotal( $(document).find("#quoteidfk").val() );
+            });
+        }, true);
+    });
+// end removal 
+
+$(document).on("dblclick",".allowedsubqty", function(){
+    $("#editsubsqty").modal("show");
+
+    let id = $(this).data("id");
+    
+    a.showdwindow_to_here("editsubqty", id, "loadsubtotalspan", false );
+});
+
+// edit subtotal
+$(document).on("click","#updatesubtotal", function(){
+    let subtotalid = $(this).data("id");
+
+    let theitems                = new Object();
+        theitems.subtotalname   = $(document).find("#subtotdesc").val();
+        theitems.subtotalqty    = $(document).find("#subtotqty").val();
+        
+    a.updateentries(theitems, "subtotaltbls", subtotalid, "subtotalid", function(data){
+        let a = new Dsifronprocs();
+
+            a.displaythequoteitems( $(document).find("#quoteidfk").val() ) 
+            a.computatethetotal( $(document).find("#quoteidfk").val() );
+
+            $("#editsubsqty").modal("hide");
+    });
+});
+// edit subtotal
+
+// sendoption 
+ $(document).on("click",".sendoptionchck", function(){
+    let val    = $(this).val();
+    let vtype  = $(this).data("vtype");
+    let qidfk  = $(document).find("#quoteidfk").val();
+
+    if ( $(this).is(":checked") ) {
+        let basicinfo               = new Object();
+            basicinfo.viewoptionfld = val;
+            basicinfo.viewoptiontxt = $(this).data("datatxt");
+            basicinfo.quoteidfk     = qidfk;
+            basicinfo.optiontype    = vtype;
+            basicinfo.status        = "1";
+        // console.log(basicinfo); return;
+        let dis = $(this);
+
+        $(document).find("#savingoptions").html("saving...");
+        a.savetodatabase(basicinfo, "viewquoteopts", false, false, function(data){
+            dis.attr("data-tblid",data);
+            alert("saved");
+            $(document).find("#savingoptions").html("");
+        });
+    } else {
+        $(document).find("#savingoptions").html("removing...");
+        a.removeitem("viewquoteopts", $(this).data("tblid"), "vopid", function(){
+            alert("removed");
+            $(document).find("#savingoptions").html("");
+        }, true, true);
+    }
+
+ })
+// end 
+
+// set computation 
+ $(document).on("click","#setcomputation", function(){
+    let quoteidfk            = $(document).find("#quoteidfk").val();
+
+    let basicinfo            = new Object();
+        basicinfo.custid     = $(this).data("custid");
+        basicinfo.quoteidfk  = quoteidfk;
+        basicinfo.grttypeid  = $(document).find("#grtselect").val();
+        basicinfo.grtvalue   = $(document).find("#grtselect :selected").text();
+        
+    a.savetodatabase(basicinfo, "grttables", false, false, function(data){
+        alert("Saved");
+        window.location.reload();
+    });
+ })
+// end setting computation

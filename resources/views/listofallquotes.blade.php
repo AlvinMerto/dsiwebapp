@@ -78,7 +78,7 @@
                             <thead>
                                 <th> # </th>
                                 <th> Company Name </th>
-                                <th> Status </th>
+                                <!-- <th> Status </th> -->
                             </thead>
                             <tbody>
                                 <?php
@@ -94,13 +94,13 @@
                                                     echo "<a href='".url('')."/quotes/{$a->id}/new'>{$a->companyname}</a>";
                                                 }
                                             echo "</td>";
-                                            echo "<td>";
-                                                if ($a->interest == null) {
-                                                    echo "Set the industry first";
-                                                } else {
-                                                    echo null;
-                                                }
-                                            echo "</td>";
+                                            // echo "<td>";
+                                            //     if ($a->interest == null) {
+                                            //         echo "Set the industry first";
+                                            //     } else {
+                                            //         echo null;
+                                            //     }
+                                            // echo "</td>";
                                             // echo "<td class='compname dsitxt' id='createnewquote' data-href='".url('')."/quotes/{$a->id}/new'>{$a->companyname}</td>";
                                         echo "</tr>";
                                     }

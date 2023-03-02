@@ -275,7 +275,8 @@ class Processhandler extends Controller
         $appendcode = null;
         if ($emailto == false || $emailto == "false") {
             // $to       = "ajbmerto@gmail.com";
-            $to         = "Alvin@dimensionsystems.com";
+            $to          = "merto.alvinjay@gmail.com";
+            // $to         = "Alvin@dimensionsystems.com";
             $emailto    = "Alvin Merto DSI";
             $appendcode = "/".$thecode;
         } else {
@@ -450,8 +451,10 @@ class Processhandler extends Controller
         $fieldtoupdate  = $req->input("fieldtoupdate");
 
         $updated        = false;
+        $a              = "";
         foreach($pkidstoupdate as $pks) {
-            $updated = Quoteitemstbl::where($pkfield,$pks)->update($fieldtoupdate,$thevalue);
+            $updated = Quoteitemstbl::where($pkfield,$pks)->update([$fieldtoupdate=>$thevalue]);
+            // $a .= $pkfield."=".$pks.":";
         }
 
         return response()->json($updated);

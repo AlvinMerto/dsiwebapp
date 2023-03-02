@@ -12,12 +12,12 @@
                         <tr>
                             <td> Markup Threshold </td>
                             <td> 
-                                <select id='productlineselect' class='dsitxtbox'>
+                                <select id='markuplineselect' class='dsitxtbox'>
                                     <option> Select </option>
                                         <?php 
                                             $custom = [];
                                             if (count($itemtype) > 0) {
-                                                echo "<optgroup label='Product Lines'> ";
+                                                echo "<optgroup label='Markup threshold'> ";
                                                 foreach($itemtype as $it) {
                                                     if ($it->iscustom == 1) {
                                                         array_push($custom, [$it->productlineid => $it->theproductline."_".$it->thegrpid]);
@@ -48,7 +48,7 @@
                         <tr>
                             <td> Markup </td>
                             <td>
-                                <span id='percentageselspan'> select from the item type... </span>
+                                <span id='markupselspan'> select from the item type... </span>
                             </td>
                         </tr>
 

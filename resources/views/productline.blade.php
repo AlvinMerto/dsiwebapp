@@ -4,7 +4,7 @@
     <div class='bgwhite'>
         <div class='row'>
             <div class='col-md-4'>
-                <div class='pd-20' style='background:#e9e9e9;'>
+                <div class='pd-20' style='background:#fff;'>
                     <div class='dsibox pd-b-20'> 
                         <p> Product Lines </p> 
                         <select class='pd-20' id='productlinechange'>
@@ -32,19 +32,23 @@
                             <button class='btn btn-danger btn-sm mg-t-10' id='deleteproductline' data-grpid='<?php echo $grpcode; ?>'> Delete Product Line </button>
                         <?php } ?>
                     </div>
-                    <div class='dsibox mg-t-20 pd-b-20'>
-                            <p class='mg-b-5'> Add New Product Line</p>
-                            <input type='hidden' value='<?php echo $newgrpid; ?>' id='newgrpid'/>
-                            <input type='text' class='dsitxtbox' style='padding:15px 10px;' id='productlinename' placeholder='Product line'/>
-                            <br/>
-                            <input type='text' class='dsitxtbox' id='initialmarkup' style='padding-left:10px;' placeholder='Mark up'/>
-                            <label class='mg-t-10'> 
-                                <input type='checkbox' name='isdefault' id='iscustomval'/> ask for custom name?
-                            </label>
-                            <br/>
-                            <input type='submit' value='Add' class='dsibutton mg-t-10' id='addnewproductline'/>
-                      
-                    </div>
+                    <?php if ($grpcode == false) { ?>
+                        <div class='dsibox mg-t-20 pd-b-20'>
+                                <p class='mg-b-5'> Add New Product Line</p>
+                                <input type='hidden' value='<?php echo $newgrpid; ?>' id='newgrpid'/>
+                                <input type='text' class='dsitxtbox' style='padding:15px 10px;' id='productlinename' placeholder='Product line'/>
+                                <br/>
+                                <input type='text' class='dsitxtbox mg-t-5' id='initialmarkup' style='padding-left:10px;' placeholder='Mark up'/>
+                                <label class='mg-t-10'> 
+                                    <input type='checkbox' name='isdefault' id='iscustomval'/> ask for custom name?
+                                </label>
+                                <label class='mg-t-10'> 
+                                    <input type='checkbox' name='isproductline' id='isproductline'/> Check to include as new productline. Uncheck if markup threshold.
+                                </label>
+                                <br/>
+                                <input type='button' value='Add' class='dsibutton mg-t-10' id='addnewproductline'/>
+                        </div>
+                    <?php } ?>
                 </div>
             </div>
             <div class='col-md-8'>
@@ -54,8 +58,8 @@
                             <div class='flex spacebetween'> 
                                 <div>
                                     <p> <?php echo $markups[0]->theproductline; ?> </p>
-                                </div>
-                                <div>
+                                <!-- </div>
+                                <div> -->
                                     <label> 
                                         <?php if ($markups[0]->iscustom == 1) { ?>
                                             <?php $checked = "checked"; ?>
@@ -64,10 +68,20 @@
                                             } ?>
                                         <input type='checkbox' data-grpid='<?php echo $markups[0]->thegrpid; ?>' id='askcustomnameid' <?php echo $checked; ?>/> Ask for custom name?
                                     </label>
-                                    
+                                        <br/>
+                                    <label>
+                                    <?php if ($markups[0]->status == 1) { ?>
+                                            <?php $checked = "checked"; ?>
+                                        <?php } else if ($markups[0]->iscustom == 0) {
+                                            $checked = null;
+                                            } ?>
+                                        <input type='checkbox' data-grpid='<?php echo $markups[0]->thegrpid; ?>' id='asproductline' <?php echo $checked; ?>/> Check to add as productline. Uncheck to set as markup.
+                                    </label>
+
                                 </div>
                             </div>
                         </div>
+                        
                         <div class='pd-20 dsibox'>
                             <form method='post' enctype="multipart/form-data"> 
                                 @csrf
@@ -80,6 +94,7 @@
                                 </div>
                             </form>
                         </div>
+                        
                         <div class='pd-t-20'>
                             <p> Mark Ups </p>
                             <ul class='markuplist'>

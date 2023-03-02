@@ -8,6 +8,8 @@ use App\Models\emaillinkstbl;
 use App\Models\QuotationCorner;
 use App\Models\Sharewithtbn;
 use App\Models\User;
+use App\Models\viewquoteopts;
+use App\Models\Subtotaltbl;
 
 use DB;
 use Auth;
@@ -92,11 +94,41 @@ class Offsitecontrol extends Controller
             }
         }
 
+        $viewoptsdata = viewquoteopts::where("quoteidfk",$quoteid)->get();
+        $subtotaltbl  = Subtotaltbl::where("quoteidfk",$quoteid)->get();
+
+        $viewopts = "";
+
+        $count    = 1;
+        $sets     = [];
+        $flds     = [];
+        $fldname  = [];
+        
+        foreach($viewoptsdata as $vs) {
+            if ($vs->optiontype == "fld") {
+                $viewopts .= "qit.".$vs->viewoptionfld;
+                array_push($flds,$vs->viewoptionfld);
+                // array_push($fldname,[$vs->viewoptionfld=>$vs->viewoptiontxt]);
+                $fldname[$vs->viewoptionfld]    = $vs->viewoptiontxt;
+
+                if ($count < count($viewoptsdata)) {
+                    $viewopts .= ",";
+                } 
+
+            } else if ($vs->optiontype == "set") {
+                array_push($sets,$vs->viewoptionfld);
+            }
+            
+        }
+
+        // var_dump($fldname);
+
         $data = DB::select(
             DB::raw(
                 "SELECT qc.*, ct.companyname, ct.address, ct.city, ct.country, ct.state, ct.zip, ct.contactnumber, 
-                ct.email, contt.email, contt.contid, contt.contactname, contt.title, tpt.subtotal, tpt.tax, tpt.taxpercentage, 
-                tpt.total, qit.itemdesc, qit.manupart, qit.itemcost, qit.qty, qit.price, users.name  
+                ct.email, contt.email, contt.contid, contt.contactname, contt.title, tpt.subtotal, 
+                tpt.tax, tpt.taxpercentage, tpt.total, 
+                {$viewopts} qit.subtotalidfk, qit.itemcost, qit.qty, qit.price,qit.expnumber, qit.withexpiry, qit.expunit, qit.expnote , users.name  
                 FROM `quotation_corners` as qc join customerstbls as ct on qc.custidfk = ct.id 
                 left join totalpricetbls as tpt on qc.quoteid = tpt.quoteidfk 
                 left join quoteitemstbls as qit on qc.quoteid = qit.quoteidfk 
@@ -187,7 +219,7 @@ class Offsitecontrol extends Controller
             
         }
 
-        return view("customerquotation", compact("data","quotestatus","quoteid","ispreview"));
+        return view("customerquotation", compact("data","quotestatus","quoteid","ispreview","flds","fldname","sets","subtotaltbl"));
     }
 
     function signandapprovequote() {
