@@ -121,6 +121,7 @@ Route::middleware("auth")->group(function(){
     Route::get("/insertotheritems",[QuotationsController::class,"insertotheritems"])->name('insertotheritems');
     Route::get("/loadingcomments",[QuotationsController::class,"loadingcomments"])->name('loadingcomments');
     Route::get("/editsubqty",[QuotationsController::class,"editsubqty"])->name('editsubqty');
+    Route::get("/viewoptionsorders",[QuotationsController::class,"viewoptionsorders"])->name("viewoptionsorders");
 });
 // end of quotes applets
 

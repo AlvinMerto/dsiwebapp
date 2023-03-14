@@ -18,7 +18,7 @@ return new class extends Migration
             $table->integer("contidfk");
             $table->string("thefield");
             $table->string("thevalue");
-            $table->strong("thevaluename")->nullable();
+            $table->string("thevaluename")->nullable();
             $table->string("inputby");
             $table->integer("status");
             $table->timestamps();

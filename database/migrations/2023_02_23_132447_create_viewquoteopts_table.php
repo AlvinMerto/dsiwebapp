@@ -16,10 +16,12 @@ return new class extends Migration
         Schema::create('viewquoteopts', function (Blueprint $table) {
             $table->increments("vopid");
             $table->string("viewoptionfld");
+            $table->string("viewoptiontxt");
             $table->string("quoteidfk");
             $table->string("optiontype");
             $table->string("inputby");
             $table->string("status");
+            $table->integer("orderfld");
             $table->timestamps();
         });
     }

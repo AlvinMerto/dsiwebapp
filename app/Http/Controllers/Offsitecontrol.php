@@ -113,7 +113,9 @@ class Offsitecontrol extends Controller
 
                 if ($count < count($viewoptsdata)) {
                     $viewopts .= ",";
-                } 
+                } else {
+                    $viewopts .= ",";
+                }
 
             } else if ($vs->optiontype == "set") {
                 array_push($sets,$vs->viewoptionfld);
@@ -137,6 +139,7 @@ class Offsitecontrol extends Controller
             )
         );
         
+       // var_dump($data);
         $quotestatus = null;
         if (count($data) > 0) {
             if ( strtotime(date("Y-m-d")) > strtotime($data[0]->quotevalidity)) {

@@ -349,10 +349,21 @@ class QuotationsController extends Controller
         if (count($data) > 0){
             $found = true;
             foreach($data as $d) {
+                // get from the subtotal table
+                    $subtot_qty   = Subtotaltbl::where("subtotalid", $d->subtotalidfk)->get("subtotalqty");
+                    $subtotqty    = 1;
+
+                    if (count($subtot_qty) >= 1) {
+                        $subtotqty    = $subtot_qty[0]->subtotalqty;
+                    }
+                // end 
+              
                 $values['Profit']   += $d->profit;
                 $values['Price']    += $d->price;
-                $values["Extended"] += $d->extended;
+                $values["Extended"] += $d->extended*$subtotqty;
                 $values['Cost']     += $d->itemcost*$d->qty;
+                
+               // $values["Extended"] = $values["Extended"] * $subtotqty;
 
                 if ($d->taxable == "1") {
                     $values['Tax']      += ($d->extended*$thetax);
@@ -815,6 +826,13 @@ class QuotationsController extends Controller
         $data       = Subtotaltbl::where("subtotalid",$subtotalid)->get();
 
         return view ("quotesapplets.editsubqty", compact("data"));
+    }
+
+    function viewoptionsorders(Request $req) {
+        $qtid = $req->input("id");
+
+        $data = viewquoteopts::where(["quoteidfk"=>$qtid,"optiontype"=>"fld"])->get("viewoptiontxt");
+        return view("quotesapplets.viewoptionsorders", compact("data"));
     }
 
 }

@@ -92,7 +92,7 @@
                                             <?php } ?>
 
                                             <?php if ($allowed) { ?>
-                                                <li data-toggle='modal' data-target='#viewingoptions'> <i class="fa fa-cog" aria-hidden="true"></i> &nbsp; Viewing Options </li>
+                                                <li data-toggle='modal' data-target='#viewingoptions' class='viewingoptions'> <i class="fa fa-cog" aria-hidden="true"></i> &nbsp; Viewing Options </li>
                                             <?php } ?>
                                         </ul>
                                     </li>
@@ -577,6 +577,14 @@
                                     <li> <label> <input type='checkbox' class='sendoptionchck' value='showbreakdown' data-datatxt="Show Breakdown" data-vtype='set' <?php if (isset($showbreakdown_id)) { echo "data-tblid='{$showbreakdown_id}'"; } ?> <?php if (isset($showbreakdown_id)) { echo "checked"; } ?>/> Show Breakdown </label> </li>
                                     <li> <label> <input type='checkbox' class='sendoptionchck' value='incorporatetaxornot' data-datatxt="Tax Incorporated" data-vtype='set' <?php if (isset($incorporatetaxornot_id)) { echo "data-tblid='{$incorporatetaxornot_id}'"; } ?> <?php if (isset($incorporatetaxornot_id)) { echo "checked"; } ?>/> Show Tax </label> </li>
                                 </ul>
+                            </div> 
+                            <div class="col-md-12"> 
+                                <h5 class='mg-t-20'> Column Order </h5>
+                                <table class='columnorder'>
+                                    <tbody id='columntds'>
+                                        <th> Nothing to show </th>
+                                    </tbody>
+                                </table>
                             </div>
                             <div class='col-md-12' style="text-align: center;">
                                 <span id='savingoptions'>  </span>

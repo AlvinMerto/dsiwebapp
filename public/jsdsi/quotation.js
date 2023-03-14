@@ -1063,12 +1063,20 @@ $(document).on("click","#updatesubtotal", function(){
         a.savetodatabase(basicinfo, "viewquoteopts", false, false, function(data){
             dis.attr("data-tblid",data);
             alert("saved");
+
+            let a = new Dsifronprocs();
+                a.showdwindow_to_here("viewoptionsorders",qidfk,"columntds");
+
             $(document).find("#savingoptions").html("");
         });
     } else {
         $(document).find("#savingoptions").html("removing...");
         a.removeitem("viewquoteopts", $(this).data("tblid"), "vopid", function(){
             alert("removed");
+            
+            let a = new Dsifronprocs();
+                a.showdwindow_to_here("viewoptionsorders",qidfk,"columntds");
+
             $(document).find("#savingoptions").html("");
         }, true, true);
     }
@@ -1092,3 +1100,9 @@ $(document).on("click","#updatesubtotal", function(){
     });
  })
 // end setting computation
+
+$(document).on("click",".viewingoptions",function(){
+    let qidfk  = $(document).find("#quoteidfk").val();
+    a.showdwindow_to_here("viewoptionsorders",qidfk,"columntds");
+});
+// showdwindow_to_here

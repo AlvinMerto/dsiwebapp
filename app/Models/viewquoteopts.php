@@ -13,7 +13,7 @@ class viewquoteopts extends Model
     protected $primaryKey   = "vopid";
     protected $fillable     = [
         "viewoptionfld","quoteidfk","optiontype",
-        "inputby","status",
+        "inputby","status","orderfld",
         "created_at","updated_at"
     ];
 }

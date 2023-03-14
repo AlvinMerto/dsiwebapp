@@ -88,11 +88,12 @@
                                             echo "<td>".$count++."</td>";
                                             // echo "<td class='compname'><a href='".url('')."/reroute/{$a->id}/new/quotes'>{$a->companyname}</a></td>";
                                             echo "<td class='compname'>";
-                                                if ($a->interest == null) {
-                                                    echo "<a href='".url('')."/customer/{$a->id}'> {$a->companyname} </a>";
-                                                } else {
-                                                    echo "<a href='".url('')."/quotes/{$a->id}/new'>{$a->companyname}</a>";
-                                                }
+                                                echo "<a href='".url('')."/quotes/{$a->id}/new'>{$a->companyname}</a>";
+                                                // if ($a->interest == null) {
+                                                //     echo "<a href='".url('')."/customer/{$a->id}'> {$a->companyname} </a>";
+                                                // } else {
+                                                //     echo "<a href='".url('')."/quotes/{$a->id}/new'>{$a->companyname}</a>";
+                                                // }
                                             echo "</td>";
                                             // echo "<td>";
                                             //     if ($a->interest == null) {

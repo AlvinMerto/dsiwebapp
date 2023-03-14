@@ -103,21 +103,17 @@
                         <?php
                             if (count($data) > 0) {
                                 $count        = 1;
-                                $countttt     = 1;
+                                $countttt     = 0;
                                 $subtotalname = null;
                                 $subtotalqty  = 0;
                                 $subprice     = 0;
                                 $subsubprice  = 0;
                                 $ext          = 0;
 
-
                                 foreach($data as $d) {
-                                    
-
                                     if ($d->subtotalidfk != null) {
                                         
                                         if (in_array("showbreakdown",$sets)) {
-                                            
                                             $displaytotal = false;
 
                                             foreach($subtotaltbl as $st) {
@@ -126,13 +122,13 @@
                                                     // $subtotalqty  = $subtotalqty+$d->qty;
                                                     $subtotalqty  = $st->subtotalqty;
                                                     $price        = $d->price*$d->qty;
-                                                    $subprice     = $subprice+$price;
+                                                    $subprice     += $price;
                                                     $subsubprice  = $subsubprice+$subprice;
                                                 }
 
                                                 $ext = $subprice*$st->subtotalqty;
                                             }
-                                            
+
                                             if (count($subtotaltbl) == $countttt) {
                                                 $displaytotal = true;
                                             }
@@ -143,7 +139,7 @@
                                                             echo $count;
                                                         echo "</td>";
                                                         echo "<td colspan='1'>";
-                                                            echo $subtotalname;
+                                                            echo $subtotalname."";
                                                         echo "</td>";
                                                         echo "<td colspan=''>";
                                                             echo $subtotalqty;
@@ -163,12 +159,42 @@
 
                                                 }
                                             $countttt++;
+                                        } else {
+                                            echo "<tr>";
+                                                echo "<td style='position: relative'>{$count}</td>";
+
+                                                foreach($flds as $fs) {
+                                                    $f = $fs;
+                                                    echo "<td>";
+                                                        if ($fs == "shippingfinalprice") {
+                                                            echo number_format($d->$fs,2);
+                                                        } else {
+                                                            echo $d->$fs;
+                                                        }
+                                                    echo "</td>";
+                                                }
+
+                                                echo "<td>{$d->qty}</td>";
+                                                echo "<td>".number_format($d->price,2)."</td>";
+                                                echo "<td style='position:relative;'>".number_format($d->price,2);
+                                                    if (in_array("withexpiry",$sets)) {
+                                                        if ($d->withexpiry != null) {
+                                                            $expiry = date("M. d, Y h:i A", strtotime($d->created_at." + ".$d->expnumber." ".$d->expunit));
+                                                            echo "<div class='titlediv'>";
+                                                                echo '<i class="fa fa-chevron-left" aria-hidden="true" style="font-size: 9px;"></i>';    
+                                                                // echo "&nbsp; {$d->expnote}";
+                                                                echo "<span> price valid until {$expiry} </span>";
+                                                            echo "</div>";
+                                                        }
+                                                    }
+                                                echo "</td>";
+
+                                            echo "</tr>";
                                         }
                                     } else {
                                         echo "<tr>";  
-                                            echo "<td style='position: relative'>{$count}";
+                                            echo "<td style='position: relative'>{$count}</td>";
                                                 
-                                            echo "</td>";
                                             foreach($flds as $fs) {
                                                 $f = $fs;
                                                 echo "<td>";
