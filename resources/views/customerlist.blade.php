@@ -3,7 +3,7 @@
     <div class="br-mainpanel pd-30">
         <div class='bgwhite'>
             <div class='dsibox pd-20 flex' style='justify-content:space-between;'>
-                <h4> All Records </h4>
+                <h4> All Recordsss </h4>
                 <button class='dsibutton' id='createnewrecord' data-toggle='modal' data-target='#addnewrecord'> Create new Record </button>
             </div>
             <!--div class='flex dsibox pd-20' style='justify-content:space-between;'>
