@@ -36,10 +36,10 @@ let qtid = [];
             basicinfo.manupart          = $(document).find("#mfgpart").val();
             basicinfo.markup            = "markup"; // $(document).find("#markupselect").val();
 
-            if ($(document).find("#percentageselect").val() == "customper") {
+            if ($("#insertitem").find("#percentageselect").val() == "customper") {
                 basicinfo.markupvalue       = $(document).find("#custpertxt").val();
             } else {
-                basicinfo.markupvalue       = $(document).find("#percentageselect").val();
+                basicinfo.markupvalue       = $("#insertitem").find("#percentageselect").val();
             }
 
 
@@ -902,13 +902,16 @@ $(document).on("click","#savethisotheritem", function(){
             basicinfo.taxable           = "0";
         }
 
-        let vals    = $(document).find("#productlineselect").val();
+        let vals    = $(document).find("#markuplineselect").val();
+
+        console.log(vals);
+
         let valtext = "";
 
         basicinfo.productlineid = vals.split("_")[2];
 
         if (vals.split("_")[1] == "0") {
-            valtext = $(document).find("#productlineselect :selected").text();
+            valtext = $(document).find("#thetypeofitem :selected").text();
         } else if (vals.split("_")[1] == "1") {
             valtext = $(document).find("#customitemtypetxt").val();
         }

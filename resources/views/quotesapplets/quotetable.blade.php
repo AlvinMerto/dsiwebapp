@@ -122,7 +122,7 @@
                     $displaysub     = true;
                     $displayedbegin = false;
                     $beginsub       = false;
-                    // $hassubtotal    = false;
+                     $hassubtotal    = false;
 
                     echo "<tr>";
                         echo "<td> &nbsp; </td>";
@@ -221,7 +221,7 @@
                         echo "<td> &nbsp; </td>";
                         echo "<td> &nbsp; </td>";
                         echo "<td> &nbsp; </td>";
-                        echo "<td colspan='2' style='text-align:right; color: #000;'> <strong> Subtotal end </strong> </td>";
+                        echo "<td colspan='2' style='text-align:right; color: #000;'> <strong> Subtotal end - -</strong> </td>";
                         echo "<td> &nbsp; </td>";
                         echo "<td colspan='0' class='{$allowedsubqtyclass}' style='color: #000;' data-id='{$serving}'> <strong> {$subtotalname} </strong> </td>";
                         echo "<td> &nbsp; </td>";

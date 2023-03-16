@@ -95,8 +95,9 @@ class Offsitecontrol extends Controller
         }
 
         $viewoptsdata = viewquoteopts::where("quoteidfk",$quoteid)->get();
-        $subtotaltbl  = Subtotaltbl::where("quoteidfk",$quoteid)->get();
-
+        $subtotaltbl  = Subtotaltbl::where("quoteidfk",$quoteid)->get(["subtotalid","quoteidfk","subtotalname","subtotalqty"])->toArray();
+        // var_dump($subtotaltbl);
+        // return;
         $viewopts = "";
 
         $count    = 1;
@@ -130,7 +131,7 @@ class Offsitecontrol extends Controller
                 "SELECT qc.*, ct.companyname, ct.address, ct.city, ct.country, ct.state, ct.zip, ct.contactnumber, 
                 ct.email, contt.email, contt.contid, contt.contactname, contt.title, tpt.subtotal, 
                 tpt.tax, tpt.taxpercentage, tpt.total, 
-                {$viewopts} qit.subtotalidfk, qit.itemcost, qit.qty, qit.price,qit.expnumber, qit.withexpiry, qit.expunit, qit.expnote , users.name  
+                {$viewopts} qit.subtotalidfk, qit.itemcost, qit.qty, qit.price,qit.extended,qit.expnumber, qit.withexpiry, qit.expunit, qit.expnote , users.name  
                 FROM `quotation_corners` as qc join customerstbls as ct on qc.custidfk = ct.id 
                 left join totalpricetbls as tpt on qc.quoteid = tpt.quoteidfk 
                 left join quoteitemstbls as qit on qc.quoteid = qit.quoteidfk 

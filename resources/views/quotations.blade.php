@@ -541,7 +541,7 @@
     <?php if ($allowed) { ?>
         <div id="viewingoptions" class="modal fade">
             <div class="modal-dialog modal-dialog-vertical-center" role="document">
-              <div class="modal-content bd-0 tx-14">
+              <div class="modal-content bd-0 tx-14" style="width: fit-content;">
                 <div class="modal-header pd-y-20 pd-x-25">
                   <h6 class="tx-14 mg-b-0 tx-uppercase tx-inverse tx-bold">Viewing Options</h6>
                   <button type="button" class="close" data-dismiss="modal" aria-label="Close">
@@ -567,14 +567,14 @@
                                     <li> <label> <input type='checkbox' class='sendoptionchck' value='supppart' data-datatxt="Supplier Part #"  data-vtype='fld' <?php if (isset($supppart_id)) { echo "data-tblid='{$supppart_id}'"; } ?> <?php if (isset($supppart_id)) { echo "checked"; } ?>/> Supplier Part # </label> </li>
                                     <li> <label> <input type='checkbox' class='sendoptionchck' value='manuname' data-datatxt="Manufacturer Name" data-vtype='fld' <?php if (isset($manuname_id)) { echo "data-tblid='{$manuname_id}'"; } ?> <?php if (isset($manuname_id)) { echo "checked"; } ?>/> Mfg Name </label> </li>
                                     <li> <label> <input type='checkbox' class='sendoptionchck' value='manupart' data-datatxt="Manufacturer Part #" data-vtype='fld' <?php if (isset($manupart_id)) { echo "data-tblid='{$manupart_id}'"; } ?> <?php if (isset($manupart_id)) { echo "checked"; } ?>/> Mfg Part # </label> </li>
-                                    <li> <label> <input type='checkbox' class='sendoptionchck' value='withexpiry' data-datatxt="With Expiry" data-vtype='fld' <?php if (isset($withexpiry_id)) { echo "data-tblid='{$withexpiry_id}'"; } ?> <?php if (isset($withexpiry_id)) { echo "checked"; } ?>/> Validity </label> </li>
+                                    <li> <label> <input type='checkbox' class='sendoptionchck' value='withexpiry' data-datatxt="With Expiry" data-vtype='set' <?php if (isset($withexpiry_id)) { echo "data-tblid='{$withexpiry_id}'"; } ?> <?php if (isset($withexpiry_id)) { echo "checked"; } ?>/> Validity </label> </li>
                                 </ul>
                             </div>
                             <div class='col-md-6'>
                                 <ul class='sendoptions mg-b-0'>
                                     <li> <label> <input type='checkbox' class='sendoptionchck' value='shippingfinalprice' data-datatxt="Shipping Fee" data-vtype='fld' <?php if (isset($shippingfinalprice_id)) { echo "data-tblid='{$shippingfinalprice_id}'"; } ?> <?php if (isset($shippingfinalprice_id)) { echo "checked"; } ?>/> Shipment fee </label> </li>
                                     <li> <label> <input type='checkbox' class='sendoptionchck' value='itemdesc' data-datatxt="Description" data-vtype='fld' <?php if (isset($itemdesc_id)) { echo "data-tblid='{$itemdesc_id}'"; } ?> <?php if (isset($itemdesc_id)) { echo "checked"; } ?>/> Description </label> </li>
-                                    <li> <label> <input type='checkbox' class='sendoptionchck' value='showbreakdown' data-datatxt="Show Breakdown" data-vtype='set' <?php if (isset($showbreakdown_id)) { echo "data-tblid='{$showbreakdown_id}'"; } ?> <?php if (isset($showbreakdown_id)) { echo "checked"; } ?>/> Show Breakdown </label> </li>
+                                    <li> <label> <input type='checkbox' class='sendoptionchck' value='showbreakdown' data-datatxt="Show Breakdown" data-vtype='set' <?php if (isset($showbreakdown_id)) { echo "data-tblid='{$showbreakdown_id}'"; } ?> <?php if (isset($showbreakdown_id)) { echo "checked"; } ?>/> Show Subtotal </label> </li>
                                     <li> <label> <input type='checkbox' class='sendoptionchck' value='incorporatetaxornot' data-datatxt="Tax Incorporated" data-vtype='set' <?php if (isset($incorporatetaxornot_id)) { echo "data-tblid='{$incorporatetaxornot_id}'"; } ?> <?php if (isset($incorporatetaxornot_id)) { echo "checked"; } ?>/> Show Tax </label> </li>
                                 </ul>
                             </div> 
