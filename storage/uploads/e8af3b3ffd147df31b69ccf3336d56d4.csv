@@ -1,0 +1,4 @@
+category,itemcode,description,itemname,itemprice,markup,sellprice,supplierid,suppliername,mfgid,mfgname,istaxable,test,test,test,test,test
+chair,kl23j4la,test 1,item one,6483,25.5,3950,aksi2k,lkasl23,lksjdf2l,lkjsl234,1,df2,sdfsd,s,sdf,sdf
+chair,kl23j4la,test 1,item one,6483,25.5,3950,aksi2k,lkasl23,lksjdf2l,lkjsl234,1,sd,sdfsd,sdf,sdf,sf
+chair,kl23j4la,test 1,item one,6483,25.5,3950,aksi2k,lkasl23,lksjdf2l,lkjsl234,1,fs,af,sdf,s,sdf

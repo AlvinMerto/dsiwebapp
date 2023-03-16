@@ -1,0 +1,541 @@
+/*@tailwind base; */
+@tailwind components;
+@tailwind utilities;
+
+.profileimg {
+    width: 33%;
+    border-radius: 99px 99px 99px 99px;
+    overflow: hidden;
+    border: 5px solid #2c3136;
+    box-shadow: 0px 0px 1px #dcd7d7;
+    margin: 27px auto 5px;
+}
+
+img {
+    max-width: 100%;
+    height: auto;
+}
+
+.profilename {
+    font-weight: bold;
+    margin:0px;
+}
+
+.usertype {
+    color:#37a000;
+}
+
+.bgwhite {
+    background-color: #fff;
+}
+
+.bgwhite:before {
+
+}
+
+.dsibutton {
+    background-color: #37a000;
+    border-radius: 3px 3px 3px 3px;
+border: none;
+padding: 9px 14px;
+color: #fff;
+font-size: 13px;
+}
+
+.dsibutton:hover {
+    background-color: #4acf02;
+}
+
+.dsibox {
+    border-bottom:1px solid #dad9d985;
+}
+
+.navsdiv div {
+    padding: 7px;
+}
+
+.leftpanel {
+    width:25%;
+}
+
+.rightpanel {
+    width:75%;
+}
+
+.dsismalltable {
+    width:100%;
+}
+
+.dsismalltable tbody tr td {
+    padding:5px;
+}
+
+.dsismalltable tbody tr th {
+    /*font-weight: normal; */
+}
+
+.dsismalltable tbody tr td:first-child {
+    text-align:right;
+    padding-right:10px;
+}
+
+.dsismalltable tbody tr td:last-child {
+    font-weight: bold;
+    font-size:14px;
+}
+
+.dsitxtbox {
+    border: 1px solid #e9e9e9;
+    background: #fcfcfc;
+    border-radius: 3px;
+    padding: 5px;
+    width:100%;
+}
+
+.bd-r {
+    border-right: 1px solid #e0e0e0;
+}
+
+.greenboxbot {
+    border-bottom:2px solid #37a000;
+    margin-top:5px;
+}
+
+.navsdiv p {
+    padding:10px;
+    margin:0px;
+}
+
+.navsdiv p:hover {
+    cursor:pointer;
+    background:#eee;
+}
+
+.nowactive,.nowactive:hover {
+    background: #37a000 !important;
+    color: #fff;
+    border-radius: 3px 3px 0px 0px;
+}
+
+.editsmall {
+    color: #785d5d;
+    text-decoration: underline;
+    cursor: pointer;
+    margin-left: 8px;
+}
+
+#datatable1_length {
+    float:right;
+}
+
+#datatable1_filter {
+    float:left;
+}
+
+#datatable1_filter label input{
+    margin-left: 0px;
+}
+
+#datatable1_previous, #datatable1_next {
+    background:#ccc;
+}
+
+#datatable1_paginate span a{
+    background:#37a000;
+    color:#fff !important;
+}
+
+table#datatable1 {
+    border:none;
+    margin-bottom: 17px;
+}
+
+table#datatable1 thead tr th:first-child,table#datatable1 tbody tr td:first-child {
+    width: 0px !important;
+    text-align: center;
+}
+
+table#datatable1 thead tr {
+    border:none;
+}
+
+table#datatable1 thead tr th{
+    border:none;
+}
+
+table#datatable1 tbody tr td{
+    border:none;
+    padding: 10px 18px;
+}
+
+.compname a{
+    font-weight: bold;
+    color:#37a000;
+}
+
+.appletnavs button{
+    margin-right: 4px;
+    background-color: #f3f3f3;
+    color: #2c3136;
+    border: 1px solid #e6e4e4;
+    border-radius: 3px;
+    font-size: 12px;
+}
+
+.appletnavs button:hover {
+    background-color:#e2e2e2;
+}
+
+select {
+    text-transform: none;
+background: #f7f7f7;
+padding: 7px 10px;
+border: 1px solid #e3e3e3;
+border-radius: 4px;
+width:100%;
+}
+
+.applettable#datatable1_wrapper#datatable1_filter, .applettable#datatable1_wrapper#datatable1_length {
+    margin:0px;
+    padding:0px;
+}
+
+.intablink {
+    font-weight: bold;
+    color: #37a000;
+    cursor:pointer;
+}
+
+.intablink:hover {
+    text-decoration:underline;
+}
+
+.removepmarg p{
+    margin:0px;
+}
+
+.tbltoptd td{
+    vertical-align: top;
+}
+.boxshadow {
+    box-shadow: 0px 2px 7px #929090;
+}
+
+.tblresponses {
+    width:100%;
+}
+
+.tblresponses tr{
+    border-bottom: 1px solid #e1e1e1;
+}
+
+.tblresponses tr td{
+    padding: 13px 0px;
+}
+
+.tblresponses tr td p{
+    margin:0px;
+}
+
+.dsitxt {
+    color:#37a000;
+    font-weight: bold;
+}
+
+.retaskdiv {
+    background: #efefef;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    border-top: 1px solid #e1e1e1;
+    border-bottom: 1px solid #e1e1e1;
+}
+
+.summarytbl {
+    border: 1px solid #e8e6e6;
+    padding: 13px;
+    font-size: .8rem;
+    border-radius: 3px;
+    background: #f6f6f6;
+    float: left;
+    margin-right: 10px;
+    margin-bottom:10px;
+    color:#333;
+}
+
+.summarytbl .h {
+    font-weight: bold;
+    border-bottom: 1px solid #e2e2e2;
+    margin-bottom: 10px;
+    padding-bottom: 5px;
+}
+
+.summarytbl ul {
+    margin:0px;
+    padding-left:15px;
+}
+
+.summarytbl ul li {
+    list-style: disclosure-closed;
+}
+
+.summarytbl:hover {
+    box-shadow: 0px 4px 4px #c0bfbf;
+}
+
+.sharewith {
+    background-color: rgb(88, 174, 81);
+    padding: 2px 5px;
+    color: #fff;
+    margin-right: 4px;
+    border-radius: 3px;
+}
+
+.tabtable {
+
+}
+
+.tabtable tr {
+    
+}
+
+.tabtable tr td{
+    
+}
+
+.tabtable tr td:first-child{
+    font-weight: bold;
+    padding-right: 20px;
+    font-size: 13px;
+}
+
+.pageh {
+    color:#2c3136;
+    margin:0px;
+}
+
+.linkbtnview {
+    color:#fff;
+}
+
+.fullwidth {
+    width:100%;
+}
+
+.quotestable {
+    width: 100%;
+    box-shadow: 0px 3px 8px #d7d7d7;
+}
+
+.quotestable thead th{
+    background:#fafafa;
+    padding:10px;
+    border-bottom: 1px solid #eee;
+    color: #37a000;
+}
+
+.quotestable tbody tr {
+
+}
+
+.quotestable tbody tr:hover > td {
+    background:#f1f1f1 !important;
+    cursor:pointer;
+}
+
+.quotestable tbody td{
+    padding:10px;
+    border-bottom: 1px solid #eee;
+    background:#fff;
+}
+
+.quotestable thead {
+
+}
+
+.quotestable tbody {
+
+}
+
+.minheightdiv {
+    min-height:600px;
+}
+
+.bgdiv {
+    background: #e9e9e9;
+    overflow: hidden;
+}
+
+.insertbtn {
+    padding: 8px 15px;
+margin-top: 10px;
+border: 1px solid #d7cccc;
+border-radius: 5px;
+box-shadow: 0px 2px 2px #cfcdcd;
+color: #716f6f;
+background: #fff;
+}
+
+.insertbtn:hover {
+    background:#e1e1e1;
+    cursor:pointer;
+}
+
+.smallnavsbtn {
+    padding: 0px;
+    margin: 0px;
+    position: relative;
+    z-index: 1001;
+}
+
+.wodets {
+    white-space: break-spaces !important;
+    color:#37a000;
+    font-weight:bold;
+    cursor:pointer;
+}
+
+.smallnavsbtn li{
+    list-style: none;
+    padding: 10px 20px 10px;
+}
+
+.smallnavsbtn li ul {
+    display: none;
+    padding: 0px;
+    border: 1px solid #e7e7e7;
+    position: absolute;
+    background: #fff;
+    box-shadow: 0px 5px 8px #c8c8c8;
+    margin-top: 7px;
+    margin-left: -20px;
+    min-width: 195px;
+}
+
+.smallnavsbtn li ul li {
+    border-bottom: 1px solid #ededed;
+}
+
+.smallnavsbtn li ul li:last-child {
+    border:none;
+}
+
+.smallnavsbtn li:hover > ul {
+    display:block;
+}
+
+.smallnavsbtn li:hover {
+    cursor:pointer;
+    background:#eee;
+}
+
+.thecompname {
+    color: #37a000;
+}
+
+#savetonewclient {
+    color:#37a00061;
+}
+
+#savetonewclient:hover {
+    color:#37a000;
+    cursor:pointer;
+}
+
+.contextmenushow{
+    position: fixed;
+    background: #fff;
+    z-index: 1000;
+    box-shadow: 0px 1px 6px #ccc;
+    border-radius: 3px;
+}
+
+.contextmenushow ul {
+    padding:0px;
+    margin:0px;
+}
+
+.contextmenushow ul li {
+    border-bottom: 1px solid #e1e1e1;
+    list-style: none;
+    padding: 10px;
+}
+
+.contextmenushow ul li:hover {
+    background: #ececec;
+    cursor:pointer;
+}
+
+.contextmenushow ul li:last-child {
+    border:none;
+}
+
+.w-auto {
+    width: auto !important;
+    padding: 0px 15px;
+}
+
+.navtopbtn:hover {
+    cursor:pointer;
+    background:#f1f1f1;
+}
+
+.maxwidth {
+    max-width: 100% !important;
+}
+
+.greenlbl {
+    font-weight: bold;
+    color:#37a000;
+}
+
+.dsishow {
+    display:block;
+}
+
+.dsihide {
+    display:none;
+}
+
+#custpertxt {
+    display:none;
+    margin-top: 2px;
+}
+
+.boxtopshadow {
+    box-shadow: 0px -4px 4px #dfdfdf;
+    border-top: 1px solid #d4d4d4;
+}
+
+.totaldivbox div {
+    margin-left: 40px;
+}
+
+.totaldivbox div h6 {
+    margin-bottom:0px;
+}
+
+.totaldivbox div p {
+    margin-bottom: 7px;
+    text-align: right;
+}
+
+.totaldiv p {
+    text-align:right;
+}
+
+.totaldiv h4, .totaldiv h6, .totaldivbox div h6 {
+    font-weight: bold;
+    color:#37a000;
+}
+
+.contact-person {
+    margin-left: 11px;
+}
+
+
+
+@media (min-width:60px) {
+    .navsdiv {
+        overflow-x:auto;
+    }
+}
