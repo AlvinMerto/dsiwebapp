@@ -158,9 +158,11 @@
                         echo "<td> &nbsp; </td>";
                         echo "<td> &nbsp; </td>";
                         echo "<td> &nbsp; </td>";
-                        echo "<td colspan='2' 
-                                style='text-align:right; color: #000;'> 
-                                <i data-subtotalid='{$serving}' class='fa fa-times removesubtotal' aria-hidden='true'></i> <strong> Subtotal Start </strong> </td>";
+                        echo "<td colspan='2' style='text-align:right; color: #000;'>";
+                            if ($allowed) {
+                                echo "<i data-subtotalid='{$serving}' class='fa fa-times removesubtotal' aria-hidden='true'></i>";
+                            }
+                        echo "<strong> Subtotal Start </strong> </td>";
                         echo "<td colspan='9' style='text-align:left;'> 
                          </td>";
                     echo "</tr>";

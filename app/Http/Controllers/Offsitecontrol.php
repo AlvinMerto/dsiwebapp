@@ -10,6 +10,7 @@ use App\Models\Sharewithtbn;
 use App\Models\User;
 use App\Models\viewquoteopts;
 use App\Models\Subtotaltbl;
+use App\Models\taxationtbl;
 
 use DB;
 use Auth;
@@ -96,8 +97,7 @@ class Offsitecontrol extends Controller
 
         $viewoptsdata = viewquoteopts::where("quoteidfk",$quoteid)->get();
         $subtotaltbl  = Subtotaltbl::where("quoteidfk",$quoteid)->get(["subtotalid","quoteidfk","subtotalname","subtotalqty"])->toArray();
-        // var_dump($subtotaltbl);
-        // return;
+        
         $viewopts = "";
 
         $count    = 1;
@@ -128,10 +128,10 @@ class Offsitecontrol extends Controller
 
         $data = DB::select(
             DB::raw(
-                "SELECT qc.*, ct.companyname, ct.address, ct.city, ct.country, ct.state, ct.zip, ct.contactnumber, 
+                "SELECT qc.*, ct.companyname, ct.id, ct.address, ct.city, ct.country, ct.state, ct.zip, ct.contactnumber, 
                 ct.email, contt.email, contt.contid, contt.contactname, contt.title, tpt.subtotal, 
                 tpt.tax, tpt.taxpercentage, tpt.total, 
-                {$viewopts} qit.subtotalidfk, qit.itemcost, qit.qty, qit.price,qit.extended,qit.expnumber, qit.withexpiry, qit.expunit, qit.expnote , users.name  
+                {$viewopts} qit.subtotalidfk, qit.itemcost, qit.taxable , qit.qty, qit.price,qit.extended,qit.expnumber, qit.withexpiry, qit.expunit, qit.expnote , users.name  
                 FROM `quotation_corners` as qc join customerstbls as ct on qc.custidfk = ct.id 
                 left join totalpricetbls as tpt on qc.quoteid = tpt.quoteidfk 
                 left join quoteitemstbls as qit on qc.quoteid = qit.quoteidfk 
@@ -140,6 +140,8 @@ class Offsitecontrol extends Controller
             )
         );
         
+        $taxatable    = taxationtbl::where("custidfk",$data[0]->id)->get("thetax")->toArray()[0]['thetax'];
+        //echo $taxatable;
        // var_dump($data);
         $quotestatus = null;
         if (count($data) > 0) {
@@ -223,7 +225,7 @@ class Offsitecontrol extends Controller
             
         }
 
-        return view("customerquotation", compact("data","quotestatus","quoteid","ispreview","flds","fldname","sets","subtotaltbl"));
+        return view("customerquotation", compact("data","quotestatus","quoteid","ispreview","flds","fldname","sets","subtotaltbl","taxatable"));
     }
 
     function signandapprovequote() {

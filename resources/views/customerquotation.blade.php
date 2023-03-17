@@ -143,6 +143,8 @@
                                                     $ext          = 0;
                                                     $subsubprice  = 0;
                                                     $displaytotal = false;
+
+                                                    $count++;
                                                 }
 
                                                 $serving = $d->subtotalidfk;
@@ -151,8 +153,22 @@
                                                     if ($st['subtotalid'] == $d->subtotalidfk) {
                                                         $subtotalname = $st['subtotalname'];
                                                         $subtotalqty  = $st['subtotalqty'];
-                                                        $price        = $d->price*$d->qty;
-                                                        // echo $price."<br/>";
+
+                                                        $dprice       = 0;
+
+                                                        if ($d->taxable == 1) {
+                                                            if (!in_array("incorporatetaxornot", $sets)) {
+                                                                $taxper1    = $taxatable/100;
+                                                                $priceadd1 = $d->price*$taxper1;
+                                                                $dprice    = $d->price+$priceadd1;
+                                                            } else {
+                                                                $dprice   = $d->price;
+                                                            }
+                                                        } else {
+                                                            $dprice   = $d->price;
+                                                        }
+
+                                                        $price        = $dprice*$d->qty;
                                                         $subprice     += $price;
                                                         $subsubprice  = $subsubprice+$subprice;
                                                     }
@@ -182,8 +198,7 @@
                                                         if ($d->withexpiry != null) {
                                                             $expiry = date("M. d, Y h:i A", strtotime($d->created_at." + ".$d->expnumber." ".$d->expunit));
                                                             echo "<div class='titlediv'>";
-                                                                echo '<i class="fa fa-chevron-left" aria-hidden="true" style="font-size: 9px;"></i>';    
-                                                                // echo "&nbsp; {$d->expnote}";
+                                                                echo '<i class="fa fa-chevron-left" aria-hidden="true" style="font-size: 9px;"></i>';
                                                                 echo "<span> price valid until {$expiry} </span>";
                                                             echo "</div>";
                                                         }
@@ -222,6 +237,8 @@
                                             $subsubprice  = 0;
                                             $displaytotal = false;
                                             $serving      = null;
+
+                                            $count++;
                                         }
 
                                         echo "<tr>";  
@@ -240,8 +257,26 @@
                                             // echo "<td>{$d->manupart}</td>";
                                             // echo "<td>{$d->itemdesc}</td>";
                                             echo "<td>{$d->qty}</td>";
-                                            echo "<td>".number_format($d->price,2)."</td>";
-                                            echo "<td style='position:relative;'>".number_format($d->extended,2);
+                                            
+                                            $theprice = 0;
+
+                                            if ($d->taxable == 1) {
+                                                if (!in_array("incorporatetaxornot", $sets)) {
+                                                    $taxper   = $taxatable/100;
+                                                    $priceadd = $d->price*$taxper;
+                                                    $theprice = $d->price+$priceadd;
+                                                } else {
+                                                    $theprice = $d->price;
+                                                }
+                                            } else {
+                                                $theprice = $d->price;
+                                            }
+
+                                            echo "<td>".number_format($theprice,2)."</td>";
+                                            
+                                            $extended = $theprice*$d->qty;
+                                            echo "<td style='position:relative;'>".number_format($extended,2);
+
                                                 if (in_array("withexpiry",$sets)) {
                                                     if ($d->withexpiry != null) {
                                                         $expiry    = date("M. d, Y h:i A", strtotime($d->created_at." + ".$d->expnumber." ".$d->expunit));
@@ -263,9 +298,10 @@
                                                 }
                                             echo "</td>";
                                         echo "</tr>";
+                                        $count++;
                                     }
                                     
-                                    $count++;
+                                    // $count++;
                                 }
                             } else {
                                 echo "<tr> <td colpan=10> No data found </td> </tr>";
@@ -280,18 +316,24 @@
                 </div>
                 <div class='col-md-5'> 
                     <div>
-                        <div>
-                            <div class='flex justit grayit blacktext removeborder'> 
-                                <div class='pd-t-10'> Subtotal: </div>
-                                <div class='pd-t-10'> <?php echo number_format($data[0]->subtotal,2); ?>  </div>
+                        <?php
+                             if (in_array("incorporatetaxornot", $sets)) {
+                        ?>
+
+                            <div>
+                                <div class='flex justit grayit blacktext removeborder'> 
+                                    <div class='pd-t-10'> Subtotal: </div>
+                                    <div class='pd-t-10'> <?php echo number_format($data[0]->subtotal,2); ?>  </div>
+                                </div>
                             </div>
-                        </div>
-                        <div>
-                            <div class='flex justit grayit removeborder'> 
-                                <div class='pd-t-10'> tax </div>
-                                <div class='pd-t-10'> <?php echo number_format($data[0]->tax,2); ?> </div>
+                        
+                            <div>
+                                <div class='flex justit grayit removeborder'> 
+                                    <div class='pd-t-10'> tax </div>
+                                    <div class='pd-t-10'> <?php echo number_format($data[0]->tax,2); ?> </div>
+                                </div>
                             </div>
-                        </div>
+                        <?php } ?>
                         <div>
                             <div class='flex justit blackit removeborder'> 
                                 <div class='pd-t-10'> Total: </div>
