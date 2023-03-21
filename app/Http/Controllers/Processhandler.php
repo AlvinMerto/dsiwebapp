@@ -13,6 +13,9 @@ use App\Models\itemstbl;
 use App\Models\Quoteitemstbl;
 use App\Models\User;
 use App\Models\emaillinkstbl;
+use App\Models\grttable;
+
+use App\Models\GlobalComputation;
 
 use DB;
 use Mail;
@@ -223,35 +226,85 @@ class Processhandler extends Controller
 
         $theitems = itemstbl::where("itemid",$itemid)->get();
 
-        $extended      = ($theitems[0]->sellprice*1);
-        $totalitemcost = ($theitems[0]->itemprice*1);
-        $profit        = ($extended-$totalitemcost);
+        $sellprice     = 0; // $theitems[0]->sellprice;
+
+        $extended      = 0; // ($theitems[0]->sellprice*1);
+        $totalitemcost = 0; // ($theitems[0]->itemprice*1);
+        $profit        = 0; // ($extended-$totalitemcost);
 
         $dddd = [
-            "quoteidfk"        => $quoteid,
-            "tblorder"         => ($tblorder+1),
-            "itemtype"         => "existing",
-            "itemdesc"         => $theitems[0]->description,
-            "itemcost"         => $theitems[0]->itemprice,
-            "suppname"         => $theitems[0]->suppliername,
-            "supppart"         => $theitems[0]->supplierid,
-            "manuname"         => $theitems[0]->mfgname,
-            "manupart"         => $theitems[0]->mfgid,
-            "profit"           => $profit,
-            "markup"           => "markup",
-            "markupvalue"      => $theitems[0]->markup,
-            "qty"              => "1",
-            "price"            => $theitems[0]->sellprice,
-            "extended"         => ($theitems[0]->sellprice*1),
-            "taxable"          => (int) $theitems[0]->istaxable,
-            "inputby"          => Auth::id(),
-            "status"           => "1"
+            "quoteidfk"          => $quoteid,
+            "tblorder"           => ($tblorder+1),
+            "itemtype"           => "existing",
+            "itemdesc"           => $theitems[0]->description,
+            "itemcost"           => $theitems[0]->itemprice,
+            "suppname"           => $theitems[0]->suppliername,
+            "supppart"           => $theitems[0]->supplierid,
+            "manuname"           => $theitems[0]->mfgname,
+            "manupart"           => $theitems[0]->mfgid,
+            "profit"             => $profit,
+            "markup"             => "markup",
+            "markupvalue"        => $theitems[0]->markup,
+            "qty"                => "1",
+            "taxable"            => (int) $theitems[0]->istaxable,
+            "inputby"            => Auth::id(),
+            "expnumber"          => null,
+            "expunit"            => null,
+            "withexpiry"         => null,
+            "productline"        => $theitems[0]->category,
+            "productlineid"      => null,
+            "shippingcost"       => null,
+            "shippingmarkup"     => null,
+            "shippingfinalprice" => null,
+            "status"             => "1",
+            "created_at"    => date("Y-m-d h:i:s")
         ];
 
-        $savetoqt     = Quoteitemstbl::create($dddd);
+        $savetoqt         = Quoteitemstbl::create($dddd);
         // $lastidinsert = $savetoqt->quoteitemid;
+        $id               = $savetoqt->quoteitemid;
 
-        $data[0] = (Object) array_merge($dddd,["quoteitemid"=>$savetoqt->quoteitemid]);
+        $ciinfo           = DB::table("customerstbls")
+                                    ->select("customerstbls.interest")
+                                    ->join("quotation_corners","customerstbls.id","=","quotation_corners.custidfk")
+                                    ->where("quotation_corners.quoteid",$quoteid)->get();
+
+            $grt          = grttable::where("quoteidfk",$quoteid)->get();
+            $custint      = $grt[0]->grttypeid; 
+
+            // set defaults
+            $compute                    = new GlobalComputation();
+            $compute->unitcost          = $theitems[0]->itemprice;
+            $compute->unitcostmarkup    = $theitems[0]->markup;
+            $compute->qty               = 1;
+            // end 
+
+            // $compute->custint           = $ciinfo[0]->interest;
+            $compute->custint              = $custint;
+
+            // start compute 
+            $compute->compute();
+            // end 
+
+            $status                     = 1;
+            $returndata = [
+                "profit"                => $compute->profit,
+                "itemcost"              => $compute->unitcost,
+                "markupvalue"           => $compute->unitcostmarkup,
+                "price"                 => $compute->sellprice,
+                "extended"              => $compute->extended,
+                "shippingfinalprice"    => 0,
+                "withshipping"          => 0,
+                "shippingcost"          => 0,
+                "shippingmarkup"        => 0,
+                "status"                => $status,
+                "qty"                   => 1
+            ];
+
+            $update    = Quoteitemstbl::where("quoteitemid",$id)->update($returndata);
+            
+        // 2023-03-20 03:55:02
+        $data[0] = (Object) array_merge($dddd,["quoteitemid" => $id, "price" => $compute->sellprice, "extended" => $compute->extended, "profit"=>$compute->profit]);
 
         return view("quotesapplets.displayperitem", compact('data'));
     }
@@ -296,14 +349,13 @@ class Processhandler extends Controller
             "idfld"          => $idfld,
             "thetbl"         => $tbl,
             "requestor"      => $id,
-            "approver"       => $from,
+            "approver"       => $to,
             "inputby"        => $id,
             "status"         => "0"
         ];
 
         $saveemaillink = emaillinkstbl::create($emaillink);
 
-        
         $info    = ['paytitle'    => $subject, 
                     'email'       => $to,
                     'emailto'     => $emailto,
@@ -389,6 +441,72 @@ class Processhandler extends Controller
             $msg->to($info['email'],"{$info['emailto']}")->subject("{$info['paytitle']}");
             $msg->from("{$info['fromemail']}","{$info['fromname']}");
         });
+    }
+
+    public function sendgenericemail(Request $req) {
+        $link     = $req->input("link");
+        $subject  = $req->input("subject");
+        $message  = $req->input("message");
+
+        $template = $req->input("template");
+
+        $idfk     = $req->input("idto");
+        $idfld    = $req->input("usertablepkid");
+        $tbl      = $req->input("usertablefrom");
+
+        $fieldtoget = $req->input("fieldtoget");
+        // to details   
+            $toid       = $req->input("idto");
+            // $todetails  = contactstbl::where("contid", $toid)->get(["email","contactname"])->toArray();
+            $todetails  = DB::select(
+                DB::raw(
+                    "select {$fieldtoget} from {$tbl} where {$idfld} = '{$idfk}'"
+                )
+            );
+
+            // $emailto    = $todetails[0]['contactname'];
+            $to         = $todetails[0]->$fieldtoget;
+        // end contact details
+
+        $id       = Auth::id();
+        $empreq   = User::where("id",$id)->get(["name","email"])->toArray();
+
+        $from     = $empreq[0]['email'];
+        $fromname = $empreq[0]['name'];
+
+        $thecode  = md5(md5(md5(date("mdyhis"))));
+
+        $link     = $link."/".$thecode;
+
+        $emaillink = [
+            "thecode"        => $thecode,
+            "linktoapprove"  => $link,
+            "idfk"           => $idfk,
+            "idfld"          => $idfld,
+            "thetbl"         => $tbl,
+            "requestor"      => $id,
+            "approver"       => $from,
+            "inputby"        => $id,
+            "status"         => "0"
+        ];
+
+        $saveemaillink = emaillinkstbl::create($emaillink);
+
+        $info    = ['paytitle'    => $subject, 
+                    'email'       => $to,
+                    'link'        => $link,
+                    'subject'     => $subject,
+                    'fromemail'   => $from,
+                    'fromname'    => $fromname,
+                    'themessage'  => $message,
+                    'thedate'     => date("M. d, Y | h:i A")];
+
+        Mail::send($template,$info, function($msg) use ($info) {
+            $msg->to($info['email'],"{$info['email']}")->subject("{$info['paytitle']}");
+            $msg->from("{$info['fromemail']}","{$info['fromname']}");
+        });
+
+        return response()->json("true");
     }
 
     public function sendnotification(Request $req) {

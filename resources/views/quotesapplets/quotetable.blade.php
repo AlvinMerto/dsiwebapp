@@ -175,7 +175,8 @@
                 if ($allowed) {
                     echo "<td class='{$hascomment}'><input type='checkbox' class='qtcheckbox' value='{$q->quoteitemid}'/></td>";
                 } else {
-                    echo "<td> &nbsp; </td>";
+                    echo "<td class='{$hascomment}'><input type='checkbox' class='qtcheckbox' value='{$q->quoteitemid}'/></td>";
+                    // echo "<td> &nbsp; </td>";
                 }
                 echo "<td data-id='{$q->quoteitemid}'>{$count}</td>";
                 echo "<td class='' id='profit_{$idname}' data-idname='{$idname}' data-fld='profit' data-id='{$q->quoteitemid}' data-cont='{$q->profit}' >".number_format($q->profit,2)."</td>";

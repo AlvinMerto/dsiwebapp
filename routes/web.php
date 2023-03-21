@@ -125,6 +125,7 @@ Route::middleware("auth")->group(function(){
 });
 // end of quotes applets
 
+
 // the orders 
 Route::middleware("auth")->group(function(){
     Route::get("/orders/{orderdate?}/{fromvendor?}/{weeklyorder?}",[TheOrdersController::class,"ordertable"])->name('orders');
@@ -148,6 +149,8 @@ Route::middleware("auth")->group(function(){
     Route::post("/updatefields",[Processhandler::class,"updatefields"])->name('updatefields');
     Route::post("/sendnotification",[Processhandler::class,"sendnotification"])->name('sendnotification');
     Route::post("/updatemultipleitems",[Processhandler::class,"updatemultipleitems"])->name('updatemultipleitems');
+    Route::post("/sendgenericemail",[Processhandler::class,"sendgenericemail"])->name('sendgenericemail');
+    Route::post("/saveorupdate",[Processhandler::class,"saveorupdate"])->name('saveorupdate');
     // Route::post("/saveaddoninfo",[Processhandler::class,"saveaddoninfo"])->name("saveaddoninfo");
 });
 // end utilities

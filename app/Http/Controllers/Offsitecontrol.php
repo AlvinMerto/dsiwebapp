@@ -128,10 +128,12 @@ class Offsitecontrol extends Controller
 
         $data = DB::select(
             DB::raw(
-                "SELECT qc.*, ct.companyname, ct.id, ct.address, ct.city, ct.country, ct.state, ct.zip, ct.contactnumber, 
+                "SELECT qc.quoteid, qc.custidfk, qc.quotedate, qc.quotevalidity, qc.orderdate, qc.quoteprice, qc.quotationsentto, qc.quotationname, qc.taxused, 
+                qc.taxused, qc.inputby, qc.status,
+                ct.companyname, ct.id, ct.address, ct.city, ct.country, ct.state, ct.zip, ct.contactnumber, 
                 ct.email, contt.email, contt.contid, contt.contactname, contt.title, tpt.subtotal, 
                 tpt.tax, tpt.taxpercentage, tpt.total, 
-                {$viewopts} qit.subtotalidfk, qit.itemcost, qit.taxable , qit.qty, qit.price,qit.extended,qit.expnumber, qit.withexpiry, qit.expunit, qit.expnote , users.name  
+                {$viewopts} qit.subtotalidfk, qit.itemcost, qit.taxable , qit.qty, qit.created_at ,qit.price,qit.extended,qit.expnumber, qit.withexpiry, qit.expunit, qit.expnote , users.name  
                 FROM `quotation_corners` as qc join customerstbls as ct on qc.custidfk = ct.id 
                 left join totalpricetbls as tpt on qc.quoteid = tpt.quoteidfk 
                 left join quoteitemstbls as qit on qc.quoteid = qit.quoteidfk 

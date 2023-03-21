@@ -101,7 +101,6 @@ class Dsifronprocs {
     }
 
     savetodatabase(thedata, table, id = false, action = false, somefunction, share = false, history = false){
-    
         $.ajax({
             url     : url+"/savetodatabase",
             type    : "post",
@@ -539,6 +538,24 @@ class Dsifronprocs {
         // });
     }
 
+    saveorupdate(thedata, checkforthis, table, somefunction = false) {
+        $.ajax({
+            url     : url+"/saveorupdate",
+            type    : "post",
+            data    : {
+                thedata      : thedata,
+                checkforthis : checkforthis,
+                table        : table
+            }, success : function(data){
+                if (somefunction != false) {
+                    somefunction(data);
+                }
+            }, error : function(){
+                alert("Error saving or updating data");
+            }
+        });
+    }
+
     changevalidityperiod(quoteid, theperiod, somefunction = false) {
         $.ajax({
             url      : url+"/changevalidity",
@@ -664,6 +681,22 @@ class Dsifronprocs {
                 
             }, error : function(){
                 alert("error checking items that needs approval");
+            }
+        });
+    }
+
+    sendgenericemail(template, subject, message, idto, usertablefrom, usertablepkid, fieldtoget ,link, somefunction = false) {
+        $.ajax({
+            url      : url+"/sendgenericemail",
+            type     : "post",
+            data     : { template : template, subject : subject, message : message, idto : idto, usertablefrom : usertablefrom, usertablepkid : usertablepkid, fieldtoget : fieldtoget, link : link }, 
+            dataType : "json",
+            success  : function(data){
+                if (somefunction != false) {
+                    somefunction(data);
+                }
+            }, error : function(a,b,c){
+                alert("Error in sending email");
             }
         });
     }

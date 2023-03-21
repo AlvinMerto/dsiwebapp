@@ -103,11 +103,12 @@ $(document).on("contextmenu", "#contextmenu" ,function(e) {
         "<ul>"+
             "<li id='itemdetails' data-toggle='modal' data-target='#viewitemdetails'> Item details </li>"+
             "<li data-toggle='modal' data-target='#insertitem' class='callitemssource' data-window='additem'> Add Custom Item </li>"+
-            "<li data-toggle='modal' data-target='#insertitem' class='callitemssource' data-window='taxable'> Insert Item from Source </li>"+
+            "<li data-toggle='modal' data-target='#insertitem' class='callitemssource' data-window='taxable'> Insert item from a product line </li>"+
             "<li data-toggle='modal' data-target='#subtotaldiv'> Subtotal </li>"+
             "<li data-toggle='modal' data-target='#insertotheritem' class='callwindow' data-window='insertotheritems' data-insertospan='insertotheritemspan'> <i class='fa fa-angle-right' aria-hidden='true'></i> Labor </li>"+
             "<li data-toggle='modal' data-target='#insertotheritem' class='callwindow' data-window='insertotheritems' data-insertospan='insertotheritemspan'> <i class='fa fa-angle-right' aria-hidden='true'></i> Freight </li>"+
             "<li data-toggle='modal' data-target='#addcomment' class='callwindowwithid' data-window='loadingcomments' data-insertospan='loadingcommentsspan'> Comment </li>"+
+            "<li id='removebtncontext'> Remove </li>"+
         "</ul>"+
      "</div>").css({
             top: e.clientY - $(".contextmenushow").height() / 2,

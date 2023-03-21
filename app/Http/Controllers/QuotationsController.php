@@ -144,7 +144,7 @@ class QuotationsController extends Controller
                                     ->select("totalpricetbls.*","users.name")
                                     ->join("users","totalpricetbls.inputby","=","users.id")
                                     ->where("totalpricetbls.quoteidfk",$quoteid)->get();
-                
+            //    var_dump($quotedets); return;
                 $emps         = DB::table("intereststbls")
                                     ->select("intereststbls.theinterest","intereststbls.interid")
                                     ->leftJoin("customerstbls","intereststbls.interid","=","customerstbls.interest")
@@ -222,6 +222,7 @@ class QuotationsController extends Controller
                             $checklink = emaillinkstbl::where(["thecode"=>$approvalcode,"approver"=>$loggedinemail,"idfk"=>$quoteid])->get();
 
                             if (count($checklink) > 0) {
+                                $showcomment    = true;
                                 $showapprovebtn = url('')."/approve/{$quoteid}/{$approvalcode}";
                             } else {
                                 die("There is something wrong with the link you browsed"); 
@@ -237,7 +238,8 @@ class QuotationsController extends Controller
             }
 
             $percentage  = markuptbl::all();
-            
+        
+            $grt         = grttable::where("quoteidfk",$quoteid)->get();
             // $data 
             $initials = explode(" ", $data[0]->companyname);
 
@@ -248,7 +250,7 @@ class QuotationsController extends Controller
                 $ints = $initials[0][0].$initials[1][0];
             }
 
-            return view("quotations", compact('data','allcust','ints','quoteid','id','quotedets','percentage','emps','empdata','categories','contacts','overallqtdets','showapprovebtn','allowed','allowdetails','haveaccess','isowner','viewopts'));
+            return view("quotations", compact('data','allcust','ints','quoteid','id','quotedets','percentage','emps','empdata','categories','contacts','overallqtdets','showapprovebtn','allowed','allowdetails','haveaccess','isowner','viewopts','grt'));
         }
     }
 
@@ -445,6 +447,12 @@ class QuotationsController extends Controller
         $comments     = CommentsTbl::where("quoteidfk",$quoteid)->get();
 
         $subtotals    = Subtotaltbl::where("quoteidfk",$quoteid)->get();
+
+        // $checklink    = emaillinkstbl::where(["thecode"=>$approvalcode,"approver"=>$loggedinemail,"idfk"=>$quoteid])->get();
+
+        // if (count($checklink) > 0) {
+        //     $approverlink = true;
+        // }
 
         return view("quotesapplets.quotetable", compact("quotesinformation","allowed","comments","subtotals"));
     }
@@ -699,18 +707,18 @@ class QuotationsController extends Controller
             if ($csvfile != false) {
                 if ($count != 0) {
                     $save = itemstbl::create([
-                            "category"      => $cats,    
+                            "category"      => $cats,
                             "itemcode"      => $csvfile[0],
                             "description"   => $csvfile[1],
                             "itemname"      => $csvfile[2],
                             "itemprice"     => $csvfile[3],
                             "markup"        => $csvfile[4],
-                            "sellprice"     => $csvfile[5],
-                            "supplierid"    => $csvfile[6],
-                            "suppliername"  => $csvfile[7],
-                            "mfgid"         => $csvfile[8],
-                            "mfgname"       => $csvfile[9],
-                            "istaxable"     => (int) $csvfile[10],
+                            // "sellprice"     => $csvfile[5],
+                            "supplierid"    => $csvfile[5],
+                            "suppliername"  => $csvfile[6],
+                            "mfgid"         => $csvfile[7],
+                            "mfgname"       => $csvfile[8],
+                            "istaxable"     => (int) $csvfile[9],
                             "inputby"       => Auth::id(),
                             "status"        => "1"
                         ]);

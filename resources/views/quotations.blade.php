@@ -16,7 +16,8 @@
     <?php } ?>
     <?php if ($showapprovebtn != null) { ?>
         <div class='showapprovediv'>
-            <a class='dsibutton' href='<?php echo $showapprovebtn ?>'> APPROVE </a>
+            <a class='dsibutton' href='<?php echo $showapprovebtn ?>'> APPROVE </a> &nbsp;
+            <button class='dsibutton' data-toggle='modal' data-target='#sendbackwindow' > Send Back </button>
         </div>
     <?php } ?>
 
@@ -49,13 +50,23 @@
                                 <div class='row'>
                                     <div class='col-md-12'>
                                         <center> 
-                                            <div style="width: 50%;margin-top: 150px; background: #fff; border-radius: 10px;" class='pd-20'>
-                                                <p style='font-size: 16px;'> Set the computation for GRT </p>    
+                                            <!-- <div style="width: 50%;margin-top: 150px; background: #fff; border-radius: 10px;" class='pd-20'> -->
+                                            <div class='col-md-6 mg-t-20 pd-50 bgwhite' style='border-radius: 5px;'>
+                                                <h2 style="font-size: 19px;color: #000;text-align: left;"> GRT Computation </h2>
+                                                <div class='row pd-20'>
+                                                    <div class='col-md-12'>
+                                                        <button class='pd-20 setcomputation' data-value = '2' data-text = 'Compute GRT' data-custid='<?php echo $id; ?>' style="font-size: 19px; width:100%;"> Compute for GRT </button>
+                                                    </div>
+                                                    <div class='col-md-12 mg-t-5'>
+                                                        <button class='pd-20 setcomputation' data-value = '1' data-text = 'No GRT' data-custid='<?php echo $id; ?>' style="font-size: 19px; width:100%;"> Do not compute GRT </button>
+                                                    </div>
+                                                </div>
+                                                <!-- <p style='font-size: 16px;'> Set the computation for GRT </p>    
                                                 <select class='dsitxtbox pd-20' id='grtselect'>
                                                     <option value='1'> No GRT </option>
                                                     <option value='2'> Compute GRT </option>
                                                 </select>
-                                                <button class='dsibutton mg-t-10' id='setcomputation' data-custid='<?php echo $id; ?>'> Set this computation </button>
+                                                <button class='dsibutton mg-t-10' id='setcomputation' data-custid='<?php //echo $id; ?>'> Set this computation </button> -->
                                             </div>
                                         </center>
                                     </div>
@@ -112,6 +123,10 @@
                                             <?php if ($allowed) { ?>
                                                 <li id='itemdetails' data-toggle='modal' data-target='#viewitemdetails'> Item details </li>
                                             <?php } ?>
+                                            <?php if ($showapprovebtn != null) { ?>
+                                                <li data-toggle='modal' data-target='#addcomment' class='callwindowwithid' data-window='loadingcomments' data-insertospan='loadingcommentsspan'> <i class="fa fa-angle-right" aria-hidden="true"></i> Comment </li>
+                                            <?php } ?>
+
                                             <li id='userswithaccess' data-toggle='modal' data-target='#viewerswithaccess'> View Users with access </li>
                                         </ul>
                                     </li>
@@ -119,7 +134,7 @@
                                         <li> Insert
                                             <ul>
                                                 <li data-toggle='modal' data-target='#insertitem' class='callitemssource' data-window='additem' data-backdrop="static" data-keyboard="false"> <i class="fa fa-angle-right" aria-hidden="true"></i> Add Custom Item </li>
-                                                <li data-toggle='modal' data-target='#insertitem' class='callitemssource' data-window='taxable'> <i class="fa fa-angle-right" aria-hidden="true"></i> Insert Item from source </li> 
+                                                <li data-toggle='modal' data-target='#insertitem' class='callitemssource' data-window='taxable'> <i class="fa fa-angle-right" aria-hidden="true"></i> Insert item from a product line </li> 
                                                 <li data-toggle='modal' data-target='#subtotaldiv'> <i class="fa fa-angle-right" aria-hidden="true"></i> Subtotal </li>
                                                 <li data-toggle='modal' data-target='#insertotheritem' class='callwindow' data-window='insertotheritems' data-insertospan='insertotheritemspan'> <i class="fa fa-angle-right" aria-hidden="true"></i> Labor </li>
                                                 <li data-toggle='modal' data-target='#insertotheritem' class='callwindow' data-window='insertotheritems' data-insertospan='insertotheritemspan'> <i class="fa fa-angle-right" aria-hidden="true"></i> Freight </li>
@@ -537,6 +552,32 @@
               </div>
             </div>
         </div>
+
+        <div id="sendbackwindow" class="modal fade">
+            <div class="modal-dialog modal-dialog-vertical-center fullwidth" role="document">
+              <div class="modal-content bd-0 tx-14">
+                <div class="modal-header pd-y-20 pd-x-25">
+                  <h6 class="tx-14 mg-b-0 tx-uppercase tx-inverse tx-bold">Send Back<span id='windowselected'> </span> </h6>
+                  <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                  </button>
+                </div>
+                <div class="modal-body">
+                    <div class='dsibox mg-b-10'>
+                        <input type='text' class='dsitxtbox' placeholder='Subject' id='sendbacksubject'/>
+                    </div>
+                    <div class='dsibox'>
+                        <textarea class='dsitxtbox' style='min-height:200px;' placeholder='Your Message' id='sendbackmessage'></textarea>
+                    </div>
+                    <div class='pd-t-10 pd-b-10'>
+                        <button class='dsibutton' id='sendbackbtn' data-owner='<?php echo $quotedets[0]->inputby; ?>'> Send Back </button>
+                        <span id='msgstat'> </span>
+                    </div>
+                </div>
+
+              </div>
+            </div>
+        </div>
     
     <?php if ($allowed) { ?>
         <div id="viewingoptions" class="modal fade">
@@ -807,13 +848,14 @@
                                                             </strong>
                                                             <small style="font-size: 13px;"> 
                                                                 <?php 
+                                                                   
                                                                     if (count($empdata) > 0) {
                                                                         echo $empdata[0]->theinterest;
                                                                     } else {
                                                                         echo "no interest specified";
                                                                     }
                                                                 ?>
-                                                            </small> <br/> <br/>
+                                                            </small> <br/> <br/>                                                            
                                                             <a class='fullwidth' style="color: #a4a3a3;font-size: 13px;text-decoration: underline;" target='_blank' href="<?php echo route('customer')."/".$data[0]->id; ?>"> Go to Profile </a>
                                                         </div>
                                                     </div>
@@ -862,6 +904,19 @@
                                                                     <?php } ?>
                                                                 </td>
                                                             </tr>
+                                                            
+                                                            <!-- <tr>
+                                                                <td> 
+                                                                    <p> GRT Computation </p>
+                                                                    <?php 
+                                                                        // if ($grt[0]->grttypeid == "2") {
+                                                                        //     echo "<strong class='dsitxt'> This quote computes GRT </strong>";
+                                                                        // } else {
+                                                                        //     echo "<strong class='dsitxt'> This quote do not compute GRT </strong>";
+                                                                        // }
+                                                                    ?>
+                                                                </td>
+                                                            </tr> -->
 
                                                             <tr>
                                                                 <td> <p> Date: </p>
@@ -872,7 +927,7 @@
                                                                     </strong> 
                                                                 </td>
                                                             </tr>
-                                                        
+                                                                        
                                                             <tr>
                                                                 <td> <p> Owner: </p>
                                                                     <strong class='dsitxt'>

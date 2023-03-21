@@ -20,7 +20,7 @@ let qtid = [];
         // custpertxt
         let tblorder  = $(document).find("#tbodyrow").children().length;
         let quoteidfk = $(document).find("#quoteidfk").val();
-        let itemcost  = $(document).find("#costtxt").val();
+        let itemcost  = $("#insertitem").find("#costtxt").val();
 
         let interid   = $(document).find("#interid").val();
 
@@ -28,16 +28,16 @@ let qtid = [];
             basicinfo.quoteidfk         = quoteidfk;
             basicinfo.tblorder          = tblorder+1;
             basicinfo.itemtype          = "custom";
-            basicinfo.itemdesc          = $(document).find("#itemdesc").val();
+            basicinfo.itemdesc          = $("#insertitem").find("#itemdesc").val();
             basicinfo.itemcost          = itemcost;
-            basicinfo.suppname          = $(document).find("#suppname").val();
-            basicinfo.supppart          = $(document).find("#supppart").val();
-            basicinfo.manuname          = $(document).find("#mfgname").val();
-            basicinfo.manupart          = $(document).find("#mfgpart").val();
+            basicinfo.suppname          = $("#insertitem").find("#suppname").val();
+            basicinfo.supppart          = $("#insertitem").find("#supppart").val();
+            basicinfo.manuname          = $("#insertitem").find("#mfgname").val();
+            basicinfo.manupart          = $("#insertitem").find("#mfgpart").val();
             basicinfo.markup            = "markup"; // $(document).find("#markupselect").val();
 
             if ($("#insertitem").find("#percentageselect").val() == "customper") {
-                basicinfo.markupvalue       = $(document).find("#custpertxt").val();
+                basicinfo.markupvalue       = $("#insertitem").find("#custpertxt").val();
             } else {
                 basicinfo.markupvalue       = $("#insertitem").find("#percentageselect").val();
             }
@@ -46,8 +46,8 @@ let qtid = [];
             // ## shipping 
             if ( $('#addshippingbtn').is(":checked") ) {
                 basicinfo.withshipping       = "1";
-                basicinfo.shippingcost       = $(document).find("#shipcost").val();
-                basicinfo.shippingmarkup     = $(document).find("#shipmarkup").val();
+                basicinfo.shippingcost       = $("#insertitem").find("#shipcost").val();
+                basicinfo.shippingmarkup     = $("#insertitem").find("#shipmarkup").val();
                 //basicinfo.shippingfinalprice = $(document).find("#shipvalue").val();
             } else {
                 delete basicinfo.withshipping;
@@ -60,9 +60,9 @@ let qtid = [];
             // ## expiry date 
             if ( $("#addexpirybtn").is(":checked") ) {
                 basicinfo.withexpiry = "1";
-                basicinfo.expnumber  = $(document).find("#expirynumber").val();
-                basicinfo.expunit    = $(document).find("#expiryunit").val();
-                basicinfo.expnote    = $(document).find("#expirynote").val(); 
+                basicinfo.expnumber  = $("#insertitem").find("#expirynumber").val();
+                basicinfo.expunit    = $("#insertitem").find("#expiryunit").val();
+                basicinfo.expnote    = $("#insertitem").find("#expirynote").val(); 
             } else {
                 delete basicinfo.withexpiry;
                 delete basicinfo.expnumber;
@@ -79,15 +79,15 @@ let qtid = [];
                 basicinfo.taxable           = "0";
             }
 
-            let vals    = $(document).find("#productlineselect").val();
+            let vals    = $("#insertitem").find("#productlineselect").val();
             let valtext = "";
 
             basicinfo.productlineid = vals.split("_")[2];
 
             if (vals.split("_")[1] == "0") {
-                valtext = $(document).find("#productlineselect :selected").text();
+                valtext = $("#insertitem").find("#productlineselect :selected").text();
             } else if (vals.split("_")[1] == "1") {
-                valtext = $(document).find("#customitemtypetxt").val();
+                valtext = $("#insertitem").find("#customitemtypetxt").val();
             }
 
             if (valtext.length == 0) {
@@ -312,7 +312,7 @@ $(document).on("click",".istaxable",function(){
 // end 
 
 // remove button
-$(document).on("click","#removebtn", function(){
+$(document).on("click","#removebtn, #removebtncontext", function(){
     if (qtid.length <= 0) {
         alert("Please select item to delete");
         return;
@@ -1088,14 +1088,22 @@ $(document).on("click","#updatesubtotal", function(){
 // end 
 
 // set computation 
- $(document).on("click","#setcomputation", function(){
+ $(document).on("click",".setcomputation", function(){
+    var conf = confirm("Are you sure you want to continue?");
+
+    if (!conf) {
+        return;
+    }
+
     let quoteidfk            = $(document).find("#quoteidfk").val();
 
     let basicinfo            = new Object();
         basicinfo.custid     = $(this).data("custid");
         basicinfo.quoteidfk  = quoteidfk;
-        basicinfo.grttypeid  = $(document).find("#grtselect").val();
-        basicinfo.grtvalue   = $(document).find("#grtselect :selected").text();
+        basicinfo.grttypeid  = $(this).data("value");
+        basicinfo.grtvalue   = $(this).data("text");
+        // basicinfo.grttypeid  = $(document).find("#grtselect").val();
+        // basicinfo.grtvalue   = $(document).find("#grtselect :selected").text();
         
     a.savetodatabase(basicinfo, "grttables", false, false, function(data){
         alert("Saved");
@@ -1109,3 +1117,36 @@ $(document).on("click",".viewingoptions",function(){
     a.showdwindow_to_here("viewoptionsorders",qidfk,"columntds");
 });
 // showdwindow_to_here
+
+// send back button 
+$(document).on("click","#sendbackbtn", function(){
+    let link            = window.location.href;
+    let subject         = $("#sendbackwindow").find("#sendbacksubject").val();
+    let message         = $("#sendbackwindow").find("#sendbackmessage").val();
+    let idto            = $(this).data("owner");
+    let usertablefrom   = "users";
+    let usertablepkid   = "id";
+    let fieldtoget      = "email";
+
+    let quoteidfk = $(document).find("#quoteidfk").val();
+    // let ownerid   = $(this).data("owner");
+
+    // let thedata       = new Object();
+    //     thedata.table = "quotation_corners",
+    //     thedata.idfk  = quoteidfk,
+    //     thedata.
+
+    $("<p style='margin-top: 5px;margin-bottom: 0px;margin-left: 15px;'> sending message... please wait </p>").appendTo("#msgstat");
+
+    a.sendgenericemail("emailtemplates.sendbackemail", subject, message, idto, usertablefrom, usertablepkid, fieldtoget ,link, function(data){
+        // alert("Message sent");
+        // let a = new Dsifronprocs();
+
+        // a.saveorupdate(thedata, checkforthis, table, function(){
+
+        // });
+        $("#msgstat").html("<p style='margin-top: 5px;margin-bottom: 0px;margin-left: 15px;'> Message Sent </p");
+        // window.location.reload();
+    });
+});
+// end 

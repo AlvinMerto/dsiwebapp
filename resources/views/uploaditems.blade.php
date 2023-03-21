@@ -18,7 +18,7 @@
                     <div class='col-md-3'>
                         <div class='dsibox'>
                             <div class='removepmarg pd-b-20'>
-                                <select class='dsitxtbox' id='thecategoryselect'>
+                                <select class='dsitxtbox' id='thecategoryselect' name='thecategoryselect'>
                                     <?php
                                         foreach($categories as $c) {
                                             $selected = null;
@@ -65,7 +65,7 @@
                                     <th> Description </th>
                                     <th> Markup </th>
                                     <th> Item Price </th>
-                                    <th> Sell Price </th>
+                                    <th> Taxable </th>
                                 </thead>
                                 <tbody>
                                     <?php
@@ -79,8 +79,14 @@
                                                     echo "<td class='intablink dsitext' data-tab='displayitemview' data-id='{$a->itemid}' id='showitemview' data-toggle='modal' data-target='#itemview'>{$a->itemname}</td>";
                                                     echo "<td>{$a->description}</td>";
                                                     echo "<td>{$a->markup}</td>";
-                                                    echo "<td>{$a->itemprice}</td>";
-                                                    echo "<td>{$a->sellprice}</td>";
+                                                    echo "<td>".number_format($a->itemprice,2)."</td>";
+
+                                                    if ($a->istaxable == 1) {
+                                                        echo "<td>Taxable</td>";
+                                                    } else {
+                                                        echo "<td>Non-Taxable</td>";
+                                                    }
+                                                    
                                                 echo "</tr>";
                                                 $count++;
                                             }

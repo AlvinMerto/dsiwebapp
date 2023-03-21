@@ -282,6 +282,7 @@
                                                         $expiry    = date("M. d, Y h:i A", strtotime($d->created_at." + ".$d->expnumber." ".$d->expunit));
                                                         $datetoday = date("M. d, Y h:i A");
 
+                                                        // echo $d->created_at."=".$datetoday;
                                                         $stats = null;
                                                         if ($expiry < $datetoday) { $stats = "EXPIRED"; }
                                                         echo "<div class='titlediv'>";
@@ -394,7 +395,7 @@
             </div><!-- modal-dialog -->
           </div><!-- modal -->
 
-             <script src="{{asset('lib/jquery/jquery.js')}}"></script>
+            <script src="{{asset('lib/jquery/jquery.js')}}"></script>
             <script src="{{asset('lib/popper.js/popper.js')}}"></script>
             <script src="{{asset('lib/bootstrap/bootstrap.js')}}"></script>
             <script src="{{asset('lib/perfect-scrollbar/js/perfect-scrollbar.jquery.js')}}"></script>
@@ -405,6 +406,6 @@
             <script src="{{asset('lib/jquery.sparkline.bower/jquery.sparkline.min.js')}}"></script>
             <script src="{{asset('lib/d3/d3.js')}}"></script>
             
-          <script src="{{asset('js/bracket.js')}}"></script>
+            <script src="{{asset('js/bracket.js')}}"></script>
     </body>
 </html>
