@@ -95,7 +95,7 @@
                                                 </li>
                                             <?php } ?>
 
-                                            <li data-toggle='modal' data-target='#savetonewcustomer'> <i class="fa fa-terminal" aria-hidden="true"></i> &nbsp;Save to new customer </li>
+                                            <!-- <li data-toggle='modal' data-target='#savetonewcustomer'> <i class="fa fa-terminal" aria-hidden="true"></i> &nbsp;Save to new customer </li> -->
                                             
                                             <?php if ($allowed) { ?>
                                                 <li id='resetexp' style='cursor:pointer;' data-toggle='modal' data-target='#resetexpiry'> <i class="fa fa-refresh" aria-hidden="true"></i> &nbsp; Reset Quotation Status</li>
@@ -113,7 +113,7 @@
                                         <ul>
                                             
                                             <li id='removebtn'> <i class="fa fa-close" aria-hidden="true"></i> &nbsp;Remove </li>
-                                            <li> <i class="fa fa-clone" aria-hidden="true"></i> &nbsp;Duplicate </li>
+                                            <li id='duplicateentry'> <i class="fa fa-clone" aria-hidden="true"></i> &nbsp;Duplicate </li>
                                         </ul>
                                     </li>
                                     <?php } ?>
@@ -909,11 +909,14 @@
                                                                 <td> 
                                                                     <p> GRT Computation </p>
                                                                     <?php 
-                                                                        // if ($grt[0]->grttypeid == "2") {
-                                                                        //     echo "<strong class='dsitxt'> This quote computes GRT </strong>";
-                                                                        // } else {
-                                                                        //     echo "<strong class='dsitxt'> This quote do not compute GRT </strong>";
-                                                                        // }
+                                                                        echo "hello world".count($grt);
+                                                                        if (count($grt) > 0) {
+                                                                            if ($grt[0]->grttypeid == "2") {
+                                                                                echo "<strong class='dsitxt'> This quote computes GRT </strong>";
+                                                                            } else {
+                                                                                echo "<strong class='dsitxt'> This quote do not compute GRT </strong>";
+                                                                            }
+                                                                        }
                                                                     ?>
                                                                 </td>
                                                             </tr> -->

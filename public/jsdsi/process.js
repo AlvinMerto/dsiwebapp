@@ -739,9 +739,10 @@ $(document).on("click","#replycompletebtn",function(){
             basicinfo.status    = "1";
 
         a.savetodatabase(basicinfo, "taxationtbls",custidfk,false, function(){
-            $(document).find("#modalpopupview").hide();
-            $(document).find(".modal-backdrop").remove();
-            $('body').removeClass("modal-open");
+            $("#taxationdivbox").modal("hide");
+            // $(document).find("#modalpopupview").hide();
+            // $(document).find(".modal-backdrop").remove();
+            // $('body').removeClass("modal-open");
         });
     });
 // end 

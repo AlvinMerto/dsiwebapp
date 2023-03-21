@@ -1150,3 +1150,16 @@ $(document).on("click","#sendbackbtn", function(){
     });
 });
 // end 
+
+// duplicate entry 
+    $(document).on("click","#duplicateentry", function(){
+        if (qtid.length == 0) {
+            alert("Please select an item.");
+            return;
+        }
+
+        a.getitemdetails(qtid[0], "quoteitemid", "quoteitemstbls", "*" ,function(data){
+
+        });
+    });
+// end duplication

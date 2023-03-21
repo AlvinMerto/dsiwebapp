@@ -151,6 +151,7 @@ Route::middleware("auth")->group(function(){
     Route::post("/updatemultipleitems",[Processhandler::class,"updatemultipleitems"])->name('updatemultipleitems');
     Route::post("/sendgenericemail",[Processhandler::class,"sendgenericemail"])->name('sendgenericemail');
     Route::post("/saveorupdate",[Processhandler::class,"saveorupdate"])->name('saveorupdate');
+    Route::post("/getitemdetails",[Processhandler::class,"getitemdetails"])->name("getitemdetails");
     // Route::post("/saveaddoninfo",[Processhandler::class,"saveaddoninfo"])->name("saveaddoninfo");
 });
 // end utilities

@@ -701,6 +701,25 @@ class Dsifronprocs {
         });
     }
 
+    getitemdetails(idfk, idfkfld, table, getwhat ,somefunction = false) {
+        $.ajax({
+            url      : url+"/getitemdetails",
+            type     : "post",
+            data     : { idfk : idfk , 
+                         idfkfld : idfkfld, 
+                         table : table, 
+                         getwhat : getwhat },
+            dataType : "json",
+            success  : function(data){
+                if (somefunction != false) {
+                    somefunction(data);
+                }
+            }, error : function(){
+                alert("error retrieving data");
+            }
+        })
+    }
+
     // callgrandtotal(id, affectid) {
     //     gettotalestsh(id, vendor, affectid, function(data){
     //         $(document).find("#"+affectid).html(data);

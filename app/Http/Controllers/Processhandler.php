@@ -578,6 +578,14 @@ class Processhandler extends Controller
         return response()->json($updated);
     }
 
+    public function getitemdetails(Request $req) {
+        $table   = $req->input("table");
+        $id      = $req->input("id");
+        $idfld   = $req->input("idfkfld");
+        $getwhat = $req->input("getwhat");
+        
+    }
+
     public function reroute($id = null, $action = null, $routeto = null) {
         return redirect($routeto."/".$id."/".$action);
     }
