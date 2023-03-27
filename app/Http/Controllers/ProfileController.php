@@ -9,6 +9,10 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\View\View;
 
+use App\Models\AllowedUser;
+
+use DB;
+
 class ProfileController extends Controller
 {
     /**
@@ -56,5 +60,26 @@ class ProfileController extends Controller
         $request->session()->regenerateToken();
 
         return Redirect::to('/');
+    }
+
+    public function main() {
+        return view("profile.main");
+    }
+
+    public function permission(Request $req, $action = null) {
+        $ownerid      = Auth::id();
+
+        $permissions  = DB::select(
+            // DB::raw("select * from allowed_users 
+            //         join quotation_corners on allowed_users.idfk = quotation_corners.quoteid 
+            //         where quotation_corners.inputby = '{$ownerid}'")
+            DB::raw(
+                "select el.*, qc.* from emaillinkstbls as el 
+                join quotation_corners as qc on el.idfk = qc.quoteid 
+                where el.thetbl = 'allowed_users'"
+            )
+        );
+
+        return view("profile.permission", compact("permissions"));
     }
 }

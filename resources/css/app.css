@@ -392,8 +392,8 @@ width:100%;
 }
 
 .quotestable {
-    width:100%;
-    box-shadow: 0px 3px 8px #a9a9a9;
+    /* width:100%;  */
+    /* box-shadow: 0px 3px 8px #a9a9a9; */
 }
 
 .quotestable thead th{
@@ -402,7 +402,7 @@ width:100%;
     border: 1px solid #c4c4c4;
     color: #5e5e5e;
     font-size: 12px;
-    text-align:left;
+    text-align:center;
 
     background: -moz-linear-gradient(top, #FAFAFA 0%, #E9E9E9 100%);
     /*
@@ -419,8 +419,7 @@ width:100%;
 }
 
 .quotestable tbody tr td:hover {
-    background:#f1f1f1;
-    cursor:pointer;
+   
 }
 
 .quotestable tbody td:first-child {
@@ -429,11 +428,24 @@ width:100%;
 }
 
 .quotestable tbody td{
-    padding:5px 8px; 
-    border: 1px solid #c1bfbf;
+    padding:2px 5px; 
+    border: 1px solid #eae7e7;
     /*background:#fff; */
     font-size:12px;
-    text-align:left;
+    color: #333;
+    width: min-content;
+}
+
+.align-right {
+    text-align:right !important;
+}
+
+.align-left {
+    text-align:left !important;
+}
+
+.align-center {
+    text-align:center !important;
 }
 
 .quotestable tbody td input[type='text'] {
@@ -725,14 +737,16 @@ font-size: 10px; */
     overflow: hidden;
     border: 1px solid #ccc;
     background-color: #37a000;
+    width: 70px;
+    height: 70px;
 }
 
 .companyprof p {
-    color:#fff;
-    margin: 13px;
+    color: #fff;
+    margin: 17px 0px;
     text-align: center;
     width: inherit;
-    font-size: 16px;
+    font-size: 23px;
 }
 
 .companyprof img{
@@ -1033,14 +1047,20 @@ border-radius: 3px;
 }
 
 .expireditem {
+    /* background: #e3d6d6 !important; */
+    /* color: #616161; */
+}
+
+.expireditem td:first-child {
     background: #e3d6d6 !important;
-    color: #616161;
 }
 
 .expireditem td:hover {
-    background-color: inherit !important;
-    color:inherit !important;
+    /* background-color: inherit !important;
+    color:inherit !important; */
 }
+
+
 
 .spacebetween {
     justify-content: space-between;
@@ -1073,6 +1093,11 @@ border-radius: 3px;
     /*font-weight: bold; */
 }
 
+.editdataqt:hover {
+    background:#c4c4c4  !important;
+    cursor:pointer;
+}
+
 .markuplist li{
     list-style:numeric;
     padding:5px;
@@ -1087,6 +1112,40 @@ border-radius: 3px;
     text-align: center;
     padding: 20px 0px;
     box-shadow: 0px 0px 10px #282828;
+}
+
+.haserror {
+    padding: 3px;
+    color: red;
+    border-radius: 99px;
+    font-size: 18px;
+}
+
+.haserror_row{
+    
+}
+
+.haserror_row td{
+    background: #e8e8e8;
+    padding:10px !important;
+}
+
+.haserror_row td p {
+    margin: 11PX 0PX 0PX 0PX;
+    font-size: 14px;
+}
+
+.haserror_row td p .headtxtspan {
+
+}
+
+.haserror_row td p .contenttxtspan {
+    font-weight: bold;
+color: green;
+}
+
+.noerror {
+
 }
 
 .usersaccessul {
@@ -1183,6 +1242,30 @@ border-radius: 3px;
     font-weight: normal;
 }
 
+.errortxt {
+    margin:0px;
+}
+
+.JCLRgrip:hover {
+    border-right:2px solid #333;
+    border-color:#333;
+}
+
+.showpermissionwindow {
+    position: fixed;
+    z-index: 100000000000000000000000000000000000000000000000000000000000;
+    background: #000000a8;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    text-align: center;
+}
+  
+.showpermissionwindow .permissionfirstborn {
+    background:#fff;
+    width:50%;
+    margin: auto;
+}
 @media (min-width:60px) {
     .navsdiv {
         overflow-x:auto;

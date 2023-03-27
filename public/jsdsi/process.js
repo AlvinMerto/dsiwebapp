@@ -14,6 +14,7 @@ window.onload = function(){
     // a.setdocumenttitle( "DSI Webapp | "+$(document).find("#doctitle").val() );
 
     a.getthetasks();
+
 };
 
 $(document).on("click",".tabs",function(e){
@@ -970,3 +971,15 @@ $(document).on("click","#asproductline", function(){
                              $(this).data("insertospan"),
                              quoteitemid);
     });
+
+// $("#demo-table thead tr th").resizable({
+//     handles: 's, e',
+//     resize: function (event, ui) {
+//         console.log(ui.size.height);
+//         $(this).siblings().height(ui.size.height);
+//     }
+// });
+
+// $(function(){
+//    $("table").colResizable();
+// });

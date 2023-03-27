@@ -29,6 +29,7 @@
 
             echo "<tr class='{$isexpired} {$needsapproval}' title='{$title}'>";
                 echo "<td><input type='checkbox' class='qtcheckbox' data-id='{$q->quoteitemid}' value='{$q->quoteitemid}'/></td>";
+                echo "<td> <i class='fa fa-check' aria-hidden='true'></i> </td>";
                 echo "<td data-id='{$q->quoteitemid}'>{$count}</td>";
                 echo "<td class='' id='profit_{$idname}' data-idname='{$idname}' data-fld='profit' data-id='{$q->quoteitemid}' data-cont='{$q->profit}' >".number_format($q->profit,2)."</td>";
                 echo "<td class='editdataqt' id='itemcost_{$idname}' data-idname='{$idname}' data-fld='itemcost' data-id='{$q->quoteitemid}' data-cont='{$q->itemcost}' >".number_format($q->itemcost,2)."</td>";

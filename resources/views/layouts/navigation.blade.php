@@ -11,7 +11,7 @@
           
         <!--/div--><!-- input-group -->
         <?php
-          $path_info = $_SERVER["PATH_INFO"];
+          $path_info = $_SERVER["REQUEST_URI"];
           $firstpath = explode("/",$path_info)[1];
         ?>
         <a href="#" style='color: #858484;'>

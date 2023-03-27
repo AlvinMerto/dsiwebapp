@@ -366,7 +366,7 @@ class Dsifronprocs {
     // end 
 
     // display the quoteitems 
-    displaythequoteitems(quoteid) {
+    displaythequoteitems(quoteid, somefunction = false) {
         $.ajax({
             url      : url+"/displayquote",
             type     : "get",
@@ -374,6 +374,9 @@ class Dsifronprocs {
             dataType : "html",
             success  : function(data){
                 $(document).find("#tbodyrow").html(data);
+                if (somefunction!=false) {
+                    somefunction();
+                }
             }, error : function() {
                 alert("error retrieving data");
             }
@@ -718,6 +721,29 @@ class Dsifronprocs {
                 alert("error retrieving data");
             }
         })
+    }
+
+    savecells(thefields, quoteid, quoteitemid, requestingid, auidfk, status, table, somefunction = false) {
+        $.ajax({
+            url     : url+"/savetocell",
+            type    : "post",
+            data    : { thefields   : thefields , 
+                        table       : table,
+                        quoteid     : quoteid,
+                        quoteitemid : quoteitemid,
+                        requestingid: requestingid,
+                        auidfk      : auidfk,
+                        status      : status
+                    },
+            dataType: "json",
+            success : function(data){
+                if (somefunction!=false) {
+                    somefunction(data);
+                }
+            },error : function(){
+                alert("Error in saving to database");
+            }
+        });
     }
 
     // callgrandtotal(id, affectid) {

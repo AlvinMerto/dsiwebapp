@@ -101,7 +101,7 @@ Route::get("/displayitemview",[CustomerstblController::class,"displayitemview"])
 
 // quotation routes
 Route::middleware("auth")->group(function(){
-    Route::get("/quotes/{id?}/{quoteid?}/{approvalcode?}/{reqsid?}/{aprvcode?}",[QuotationsController::class,"quotes"])->name('quotes');
+    Route::get("/quotes/{id?}/{quoteid?}/{approvalcode?}/{reqsid?}/{aprvcode?}/{auid?}",[QuotationsController::class,"quotes"])->name('quotes');
     Route::get("/taxable",[QuotationsController::class,"taxable"])->name('taxable');
     Route::get("/nontaxable",[QuotationsController::class,"nontaxable"])->name('nontaxable');
     Route::get("/additem",[QuotationsController::class,"additem"])->name('additem');
@@ -152,6 +152,7 @@ Route::middleware("auth")->group(function(){
     Route::post("/sendgenericemail",[Processhandler::class,"sendgenericemail"])->name('sendgenericemail');
     Route::post("/saveorupdate",[Processhandler::class,"saveorupdate"])->name('saveorupdate');
     Route::post("/getitemdetails",[Processhandler::class,"getitemdetails"])->name("getitemdetails");
+    Route::post("/savetocell",[Processhandler::class,"savetocell"])->name("savetocell");
     // Route::post("/saveaddoninfo",[Processhandler::class,"saveaddoninfo"])->name("saveaddoninfo");
 });
 // end utilities
@@ -161,6 +162,8 @@ Route::post("/saveinfo",[CustomerstblController::class,"saveinfo"])->middleware(
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::get("/profile/main",[ProfileController::class,"main"])->name("profile.main");
+    Route::get("/profile/permission/{action?}",[ProfileController::class,"permission"])->name("profile.permission");
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });

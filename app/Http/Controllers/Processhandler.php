@@ -14,6 +14,7 @@ use App\Models\Quoteitemstbl;
 use App\Models\User;
 use App\Models\emaillinkstbl;
 use App\Models\grttable;
+use App\Models\allowedcells;
 
 use App\Models\GlobalComputation;
 
@@ -584,6 +585,35 @@ class Processhandler extends Controller
         $idfld   = $req->input("idfkfld");
         $getwhat = $req->input("getwhat");
         
+    }
+
+    public function savetocell(Request $req) {
+        $fields       = (array) $req->input("thefields");
+        $table        = "allowedcells";
+        $quoteid      = $req->input("quoteid");
+        $quoteitemid  = (array) $req->input("quoteitemid");
+        $requestingid = $req->input("requestingid");
+        $auidfk       = $req->input("auidfk");
+        $status       = $req->input("status");
+
+        $save         = false;
+
+        foreach($quoteitemid as $qt) {
+            foreach($fields as $f) {
+                $save = allowedcells::create([
+                    "quoteid"          => $quoteid,
+                    "quoteitemid"      => $qt,
+                    "requestinguserid" => $requestingid,
+                    "cellid"           => $f,
+                    "auidfk"           => $auidfk,
+                    "status"           => "0",
+                    "inputby"          => Auth::id(),
+                ]);
+            }
+        }
+        
+        return response()->json($save);
+        // allowedcells
     }
 
     public function reroute($id = null, $action = null, $routeto = null) {

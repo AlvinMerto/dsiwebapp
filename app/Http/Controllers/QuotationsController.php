@@ -22,6 +22,7 @@ use App\Models\CommentsTbl;
 use App\Models\Subtotaltbl;
 use App\Models\viewquoteopts;
 use App\Models\grttable;
+use App\Models\allowedcells;
 
 use App\Models\GlobalComputation;
 
@@ -29,7 +30,7 @@ use DB;
 
 class QuotationsController extends Controller
 {
-    function quotes(Request $req, $id = null, $quoteid = null, $approvalcode = null, $reqsid = null, $aprvcode = null) {
+    function quotes(Request $req, $id = null, $quoteid = null, $approvalcode = null, $reqsid = null, $aprvcode = null, $auid = null) {
         date_default_timezone_set("asia/manila");
 
         if ($id == null) {
@@ -191,28 +192,46 @@ class QuotationsController extends Controller
 
                     // asking for approval
                     //$showallowbtn  = false;
-                    $allowdetails  = null;
+                    $allowdetails    = null;
+                    $allowedcells    = null;
+                    $requestdetails  = null;
+                    $thecells        = null;
+
                     if ($approvalcode != null) {
                         if ($approvalcode == "askingpermission") {
                             if ($reqsid == null) {
                                 die("Requestor ID is not set"); return;
                             } else {
                                 $requestdetails = DB::select(
-                                    DB::raw("select allowed_users.alloweduser, users.name from allowed_users
+                                    DB::raw("select ac.*, allowed_users.alloweduser, users.name from allowed_users
                                             join users on allowed_users.alloweduser = users.id 
+                                            join allowedcells as ac on allowed_users.auid = ac.auidfk
                                             where allowed_users.alloweduser = '{$reqsid}' 
                                             and allowed_users.idfk = '{$quoteid}'")
                                 );
-                                                               
+                                
                                 if (count($requestdetails) == 0) {
                                     die("No request found"); return;
                                 }
 
+                                $thecells = DB::select(
+                                    DB::raw("select * from emaillinkstbls as el
+                                            JOIN allowed_users as au on el.idfk = au.idfk
+                                            JOIN allowedcells as ac on au.auid = ac.auidfk
+                                            where el.thecode = '{$aprvcode}'")
+                                );
+                               
+                                echo "select * from emaillinkstbls as el
+                                JOIN allowed_users as au on el.idfk = au.idfk
+                                JOIN allowedcells as ac on au.auid = ac.auidfk
+                                where el.thecode = '{$aprvcode}'";
                                 // http://localhost:8000/approve/55/a545f2d7d55a670c3d9ecaba0d628a03
                                 $allowdetails = [
                                     "req"           => $requestdetails[0]->name,
                                     "approvelink"   => url('')."/approve/55/{$aprvcode}"
                                 ];
+
+                                $allowedcells = allowedcells::where(["requestinguserid"=>$reqsid,"quoteid" => $quoteid])->get();
 
                                 // $showallowbtn = true;
                             }
@@ -250,7 +269,8 @@ class QuotationsController extends Controller
                 $ints = $initials[0][0].$initials[1][0];
             }
 
-            return view("quotations", compact('data','allcust','ints','quoteid','id','quotedets','percentage','emps','empdata','categories','contacts','overallqtdets','showapprovebtn','allowed','allowdetails','haveaccess','isowner','viewopts','grt'));
+           
+            return view("quotations", compact('data','allcust','ints','quoteid','id','quotedets','percentage','emps','empdata','categories','contacts','overallqtdets','showapprovebtn','allowed','allowdetails','haveaccess','isowner','viewopts','grt','allowedcells',"requestdetails","thecells"));
         }
     }
 

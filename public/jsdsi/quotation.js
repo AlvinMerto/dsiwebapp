@@ -1,7 +1,10 @@
 // call after body onload
 window.onload = function(){
     if ( undefined !== $(document).find("#quoteidfk").val() ) {
-        a.displaythequoteitems( $(document).find("#quoteidfk").val() ) 
+        a.displaythequoteitems( $(document).find("#quoteidfk").val() , function(){
+            $("#quoteshit").colResizable({resizeMode:'overflow'});
+        });
+
         a.computatethetotal( $(document).find("#quoteidfk").val() );
     }
 
@@ -11,7 +14,8 @@ window.onload = function(){
 // end 
 
 let extendedprice = 0;
-let qtid = [];
+let qtid          = [];
+let qfields       = [];
 
 // insert new custom item
     $(document).on("click","#insertcustomitem", function(){
@@ -791,14 +795,30 @@ $(document).on("click","#removeexpiry", function(){
             thedata.status      = "0";
 
         $(document).find("#sendingemailstatus").html("Saving item...");
-        a.savetodatabase(thedata, "allowed_users", false, false, function(){
-            $(document).find("#sendingemailstatus").html("sending email..");
+
+        if (qtid.length == 0) {
+            alert("Please select an item");
+            return;
+        }
+
+        a.savetodatabase(thedata, "allowed_users", false, false, function(data){
 
             let a = new Dsifronprocs();
 
-                a.sendemail(subject, message, link , id , idfld , tbl , function(data){
-                    alert("Your email is sent.");
-                }, emailto);
+                $(document).find("#sendingemailstatus").html("Saving cells...");
+                a.savecells(qfields, id, qtid, emailto, data, 1, "allowedcells", function(data){
+
+                    $(document).find("#sendingemailstatus").html("sending email..");
+                    let a = new Dsifronprocs();
+
+                    a.sendemail(subject, message, link , id , idfld , tbl , function(data){
+                        alert("Your email is sent.");
+                        $(document).find("#sendingemailstatus").html("Email is Sent");
+                        $("#askpermission").modal("hide");
+                    }, emailto);
+                });
+                
+                
         });
             
     });
@@ -809,7 +829,7 @@ $(document).on("click","#removeexpiry", function(){
         let tblid = $(this).data("auid");
 
         let dis   = $(this).parent();
-
+        console.log(dis);
         a.removeitem("allowed_users", tblid, "auid", function(data){
             if (data) {
                 alert("User have successfully been removed from editing this quotation.");
@@ -1163,3 +1183,29 @@ $(document).on("click","#sendbackbtn", function(){
         });
     });
 // end duplication
+
+// has error 
+    $(document).on("click",".haserror", function(){
+        $(this).parent().parent().next().toggle();
+    });
+// end has error 
+
+// field select 
+    $(document).on("click",".fieldsselect", function(){
+        let state = $(this).is(":checked");
+    
+        if (state == true || state == "true") {
+            qfields.push( $(this).val() );
+        } else if (state == false || state == "false") {
+            let indx  = qfields.indexOf( $(this).val() );
+            qfields.splice(indx,1);
+        }
+    });
+// end field select
+
+// select all fields 
+    $(document).on("click","#selectallflds", function(){
+        
+    });
+// end select all fields 
+

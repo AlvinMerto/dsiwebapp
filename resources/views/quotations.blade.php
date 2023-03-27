@@ -22,19 +22,98 @@
     <?php } ?>
 
     <?php if ( is_array($allowdetails)) { ?>
-        <div class='showapprovediv'>
-            <p> <strong> <?php echo $allowdetails['req']; ?> is asking permission to edit this quotation. </strong> </p>
-            <a href="<?php echo $allowdetails['approvelink']; ?>" class='dsibutton' target='_blank'> Give Permission </a>
+        <div class='showpermissionwindow pd-t-20'>
+            <div class='pd-t-20 pd-b-20 permissionfirstborn'>
+                <p> <strong> <?php echo $allowdetails['req']; ?> is asking permission to edit this quotation. </strong> </p>
+                    <div>
+                        <?php
+                            foreach($thecells as $tc) {
+                                echo $tc->cellid."<br/>";
+                            }
+                        ?>
+                    </div>
+                <a href="<?php echo $allowdetails['approvelink']; ?>" class='dsibutton' target='_blank'> Give Permission </a>
+            </div>
         </div>
     <?php } ?>
    <div class="br-mainpanel pd-15">
         <div class=''>
-            <div class='row'>
+                <div class='row mg-b-10'>
                     <div class='dsibox mg-b-20 pd-r-30 pd-t-15' id='totaldiv' style=''> 
                         <p style='text-align:center;'> Computing... </p>
                     </div>
-                    <div class='col-md-2 pd-r-0' style='display:none;'>
-                   
+                    <div class='col-md-12 pd-r-0'>
+                        <div class='flex'>
+                            <div class='col-md-6 pd-0 flex bgwhite' style="border-radius: 99px 0px 0px 99px;"> 
+                                <div class='companyprof'>
+                                    <p> <?php echo strtoupper($ints); ?> </p>
+                                </div>
+                                <div class='pd-t-20 pd-r-15 pd-l-15 mg-r-10' style='border-right:3px solid #f3f4f6;'>
+                                    <h3 style="font-size: 21px;"> Quotation </h3>
+                                </div>
+                                <div class='pd-t-10 mg-r-20'>
+                                    <h5 style="font-size: 17px;"> Company </h5>
+                                    <p class='mg-0 dsitxt'> <i class="fa fa-chevron-right" aria-hidden="true" style="font-size: 12px;"></i> 
+                                        <span> 
+                                            <?php 
+                                                if ($data != null) {
+                                                    if (strlen($data[0]->companyname)==0) {
+                                                        echo "N/A";
+                                                    } else {
+                                                        echo $data[0]->companyname;
+                                                    }
+                                                }
+                                            ?>    
+                                        </span> 
+                                    </p>
+                                </div>
+                                <div class='pd-t-10 mg-r-20'>
+                                    <h5 style="font-size: 17px;"> Contact  </h5>
+                                    <p class='mg-0 dsitxt'> 
+                                        <i class="fa fa-chevron-right" aria-hidden="true" style="font-size: 12px;"></i> 
+                                        <?php 
+                                            if (count($contacts) > 0) {
+                                                foreach($contacts as $cn) {
+                                                    if ($overallqtdets[0]->quotationsentto == $cn->contid) {
+                                                        echo $cn->contactname;
+                                                    }
+                                                }
+                                            }
+                                        ?>
+                                    </p>
+                                </div>
+                            <!-- </div>
+                            <div class='col-md-6 pd-0 flex bgwhite pd-r-30' style="justify-content: right;"> -->
+                                <div class='pd-t-10 mg-r-20'>
+                                    <h5 style="font-size: 17px;"> Status </h5>
+                                    <p class='mg-0 dsitxt'> <i class="fa fa-chevron-right" aria-hidden="true" style="font-size: 12px;"></i> Quotation </p>
+                                </div>
+                                <div class='pd-t-10 mg-r-20'>
+                                    <h5 style="font-size: 17px;"> Date Created </h5>
+                                    <p class='mg-0 dsitxt'> <i class="fa fa-chevron-right" aria-hidden="true" style="font-size: 12px;"></i> June 2, 2023 </p>
+                                </div>
+                                <div class='pd-t-10'>
+                                    <h5 style="font-size: 17px;"> Valid Until </h5>
+                                    <p class='mg-0 dsitxt'> <i class="fa fa-chevron-right" aria-hidden="true" style="font-size: 12px;"></i> June 3, 2023 </p>
+                                </div>
+                            </div>
+                            <div class='col-md-6 pd-0 flex bgwhite pd-r-30' style="justify-content: right;"> 
+                                <?php if (!$allowed) { ?>
+                                    <div class="pd-t-15">
+                                        <button class='dsibutton' data-toggle='modal' data-target='#askpermission'> Ask Permission to edit </button>
+                                    </div>
+                                <?php } ?>
+
+                                <?php if ($showapprovebtn == null) { ?>
+                                    <?php if ($allowed) { ?>
+                                        <div id ='checkformarkups'  class='pd-t-15'> 
+                                            checking...
+                                        </div>
+                                    <?php } ?>
+                                <?php } ?>
+
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <div class='col-md-12 pd-l-5' id='motherdiv' style='min-height:700px; '>
@@ -76,7 +155,7 @@
                         <!-- <iframe name='iframe_a' id='iframe_a'> </iframe> -->
                         <div class='flex' style="justify-content: space-between;width: 100%; ">
                                 <ul class='flex smallnavsbtn'>
-                                    <li style="background: #37a000;color: #fff; border-radius: 10px 0px 0px 0px;" data-toggle='modal' data-target='#companyprofile'> <i class="fa fa-id-card-o" aria-hidden="true"></i> &nbsp; Profile </li>
+                                    <!-- <li style="background: #37a000;color: #fff; border-radius: 10px 0px 0px 0px;" data-toggle='modal' data-target='#companyprofile'> <i class="fa fa-id-card-o" aria-hidden="true"></i> &nbsp; Profile </li> -->
                                     <li> File 
                                         <ul>
                                             <?php if ($allowed) { ?>
@@ -155,13 +234,7 @@
                                     <?php } ?>
                                 </ul>
 
-                                <?php if ($showapprovebtn == null) { ?>
-                                    <?php if ($allowed) { ?>
-                                        <div id ='checkformarkups' style='text-align:center; margin: 3px 4px 2px 2px;'> 
-                                            checking...
-                                        </div>
-                                    <?php } ?>
-                                <?php } ?>
+                               
                                 
                         </div>
                             
@@ -172,21 +245,22 @@
                     <!--<h6 class="pageh pd-l-10 pd-t-10 pd-b-10" style="border-right: 1px solid #eaeaea;border-bottom: 1px solid #eaeaea;"> Quotation for <a href='#' data-toggle='modal' data-target='#basicinfodiv' class='thecompname'> <?php // echo $data[0]->companyname; ?> </a>  </h6>--> 
                         <?php if (!$allowed) { $idcontext = null; } else { $idcontext = "contextmenu"; } ?>
                         <div class='dsibox minheightdiv bgdiv' id='<?php echo $idcontext; ?>'>
-                            <table class='quotestable'>  
+                            <table class='quotestable' id='quoteshit'>  
                                 <!-- table-striped -->
                                 <thead>
                                     <tr style="border-right: 1px solid #eaeaea;">
                                         <th> &nbsp; </th>
+                                        <th> &nbsp; </th>
                                         <th> # </th>
                                         <th> Profit </th>
                                         <th> Cost </th>
-                                        <th> Cost: Markup </th>
+                                        <th> Cost: Markup  </th>
                                         <th> Supplier </th>
                                         <th> Supplier # </th>
                                         <th> Mfg </th>
                                         <th> Mfg # </th>
                                         <th> Product Line </th>
-                                        <th style="width:250px"> Description </th>
+                                        <th style='width:300px;'> Description </th>
                                         <th> Ship: Cost </th>
                                         <th> Ship: Markup </th>
                                         <th> Ship: Price </th>
@@ -194,6 +268,7 @@
                                         <th> Price </th>
                                         <th> Extended </th>
                                         <th> Tax </th>
+                                        <th style='width:200px;'> Status </th>
                                     </tr>
                                 </thead>
                                 <tbody id='tbodyrow'>
@@ -267,8 +342,32 @@
                   </button>
                 </div>
                 <div class="modal-body pd-25">
-                    <p class='mg-b-5'> Reason </p>
-                    <textarea id='reasontxt' class='dsitxtbox' style='width:300px; height:200px;resize:none;'></textarea>
+                    <p> Check the field(s) that you ask permission to edit </p>
+                    <label> <input type='checkbox' value='all' id='selectallflds'/> ALL </label>
+                    <div class='row'>
+                        <div class='col-md-4'>
+                            <label> <input type='checkbox' value='1' class='fieldsselect'/> Cost </label><br/>
+                            <label> <input type='checkbox' value='2' class='fieldsselect'/> Cost Markup </label><br/>
+                            <label> <input type='checkbox' value='3' class='fieldsselect'/> Supplier </label><br/>
+                            <label> <input type='checkbox' value='4' class='fieldsselect'/> Supplier Number </label>
+                        </div>
+                        <div class='col-md-4'>
+                            <label> <input type='checkbox' value='5' class='fieldsselect'/> Mfg </label><br/>
+                            <label> <input type='checkbox' value='6' class='fieldsselect'/> Mfg Number </label><br/>
+                            <label> <input type='checkbox' value='7' class='fieldsselect'/> Product Line </label><br/>
+                            <label> <input type='checkbox' value='8' class='fieldsselect'/> Description </label>
+                        </div>
+                        <div class='col-md-4'>
+                            <label> <input type='checkbox' value='9' class='fieldsselect'/> Ship: Cost </label><br/>
+                            <label> <input type='checkbox' value='10' class='fieldsselect'/> Ship: Markup </label><br/>
+                            <label> <input type='checkbox' value='11' class='fieldsselect'/> Ship: Price </label> <br/>
+                            <label> <input type='checkbox' value='12' class='fieldsselect'/> Qty </label>
+                        </div>
+                    </div>
+                    <div>
+                        <p class='mg-b-5'> Reason </p>
+                        <textarea id='reasontxt' class='dsitxtbox' style='height:200px;resize:none;'></textarea>
+                    </div>
                 </div>
                 <div class="modal-footer">
                   <span id='sendingemailstatus'>  </span>
@@ -679,6 +778,7 @@
                     </div>
                     <div class='pd-t-10 pd-b-10'>
                         <button class='dsibutton' id='savequotation'> Save Quotation </button>
+                        <button class='dsibutton'> Add New </button>
                     </div>
                 </div>
 

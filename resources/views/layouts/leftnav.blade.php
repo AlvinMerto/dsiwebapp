@@ -8,7 +8,7 @@
             <small class='usertype'> Admin </small>
         </div>
       <?php
-        $path_info = $_SERVER["PATH_INFO"];
+        $path_info = $_SERVER["REQUEST_URI"];
         $firstpath = explode("/",$path_info)[1];
       ?>
       <label class="sidebar-label pd-x-15 mg-t-20">Navigation</label>

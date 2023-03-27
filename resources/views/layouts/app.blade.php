@@ -99,6 +99,8 @@
     <script src="{{asset('js/select2.min.js')}}"></script>
     <!-- end wysiwyg -->
     
+    <script src="{{asset('jsdsi/colResizable-1.6.js')}}"></script>
+
     <script src="{{asset('js/bracket.js')}}"></script>
     <script src="{{asset('js/ResizeSensor.js')}}"></script>
     <script src="{{asset('js/dashboard.js')}}"></script>
@@ -109,7 +111,7 @@
     <script src="{{asset('jsdsi/process.js')}}"></script>
 
     <?php
-        $path_info = $_SERVER["PATH_INFO"];
+        $path_info = $_SERVER["REQUEST_URI"];
         $firstpath = explode("/",$path_info)[1];
         
         if ($firstpath == "quotes") {

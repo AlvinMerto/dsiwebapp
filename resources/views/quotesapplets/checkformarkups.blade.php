@@ -1,7 +1,7 @@
 <div class='dsibox pd-0'>
     <!-- <p> Some items are not within the specified markup value </p>     -->
     <input type='hidden' value='1' id='na'/>
-    <button class='dsibutton' data-toggle='modal' data-target='#askforapprovaldiv'> Ask for Approval </button>
+    <button class='dsibutton' data-toggle='modal' data-target='#askforapprovaldiv' style="border-radius: 99px;"> Ask for Approval </button>
 </div>
 
         <div id="askforapprovaldiv" class="modal fade" style='z-index: 10000000000000000;'>

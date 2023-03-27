@@ -68,10 +68,13 @@ class GlobalComputation extends Model
             $this->sellprice     = $this->sellprice+$this->totalshipcost;
         }
 
+        //***** added all costs before GRT price is computed and added ********//
         if ((int) $this->custint == 2) { // private
             $grt             = ($this->sellprice*.05);
             $this->sellprice = ($this->sellprice+$grt);
         }
+        // no GRT is added when a customer ID is set to 1
+        // 1 means that the entity is a government
         
         $this->sellprice     = ceil($this->sellprice);
         $this->totalshipcost = ceil($this->totalshipcost);
